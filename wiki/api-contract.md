@@ -60,9 +60,11 @@ the pre-computed descriptor array directly; Phase 2 will add server-side computa
 
 ## Quiz
 
-`GET /api/quiz/today?patient_id=` — generate-if-absent-or-fetch today's questions (JWT)
-`POST /api/quiz/attempts` — body `{ quiz_question_id, answered, correct }` (JWT)
-`GET /api/quiz/history?patient_id=` (JWT)
+`GET /api/quiz/today?device_id=` — generate-if-absent-or-fetch today's questions, scoped to the
+authenticated device's patient (device API key — called by the companion app; there's no patient login)
+`POST /api/quiz/attempts` — body `{ device_id, quiz_question_id, answered, correct }` (device API key —
+rejects with 404 if the question doesn't belong to this device's patient)
+`GET /api/quiz/history?patient_id=` (JWT, dashboard use)
 
 ## Recall & assist (device API key — called on the patient's behalf by the companion app)
 

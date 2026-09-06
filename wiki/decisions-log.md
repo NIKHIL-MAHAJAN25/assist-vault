@@ -51,6 +51,65 @@ non-backend repos need to read.
 Don't re-propose any of these without a genuine change in project shape (e.g. Graphify becomes relevant
 once `backend-server` is a large existing codebase future sessions need to rediscover).
 
+---
+
+## Session 2 — 2026-09-07 — companion-app + family-dashboard stack
+
+Full Phase 0-2 scope confirmed with the user for both components (everything short of Phase 3:
+wearable app, "Lost?" widget, NFC, voice-note playback). Built via two parallel builder subagents
+(master/slave split, now useful since `api-contract.md` is locked and these are independent consumers
+of it — see `../CLAUDE.md` working agreement). This session's orchestration primitive is the `Agent`
+tool (in-process subagents with a `model` override), not separate CLI processes with per-repo
+`settings.json` grants like the Vedika precedent `CLAUDE.md` describes — read/write separation is
+enforced by prompt scope (each slave gets only its own repo's relevant contract slice pasted in,
+explicit instruction not to touch the vault or the sibling repo) rather than filesystem permission.
+This session is running Sonnet, not Opus as the spec assumed for the master role — accepted as a
+deviation, not blocking.
+
+### `companion-app` — Kotlin/Android
+- Jetpack Compose + Material3, min SDK 26. Least boilerplate, fits the persona's low-nav-complexity
+  need better than XML views.
+- Retrofit + OkHttp + kotlinx.serialization for the API client; `EncryptedSharedPreferences` for the
+  device API key.
+- `FusedLocationProviderClient` for GPS; Android `SpeechRecognizer`/`TextToSpeech` for STT/TTS — all
+  on-device, no extra deps beyond Play Services.
+- A foreground `Service` with a coroutine ticker drives the 5s frame-capture loop and GPS pings —
+  `WorkManager` doesn't fit sub-minute intervals.
+- Frame source is a `FrameSource` interface with an HTTP-polling implementation against a
+  **configurable** base URL, not a hardcoded ESP32 address — the physical device isn't wired yet
+  (that's build-order step 5, a separate later session). This keeps the change-detection + relay logic
+  real and testable now without blocking on hardware.
+- **Known limitation, not silently built around**: the TTS-on-recognition toggle exists in Settings but
+  has no real trigger — Gemini's frame analysis reports whether *a* person is visible, not *which*
+  enrolled face. Wiring that requires backend Phase 2 work (face-api.js against captured frames) that
+  doesn't exist yet.
+
+### `family-dashboard` — React
+- Vite + React 18, plain JavaScript (matches `backend-server`, skips TS tooling overhead for a
+  prototype-scale dashboard).
+- `react-router-dom` + `@tanstack/react-query` + Tailwind CSS; `react-leaflet`/OpenStreetMap for the
+  geofence map editor (no API key needed).
+- Face enrollment bundles `face-api.js` **client-side** (it's a browser-first library) to compute the
+  descriptor from an uploaded reference photo in the browser, then POSTs the resulting array to
+  `/api/enrolled-faces` — makes the feature usable from a photo instead of hand-typing a 128-number
+  array.
+- JWT kept in memory + `localStorage` — deliberate simplicity-over-hardening for a prototype; the
+  XSS-exposure trade-off against httpOnly cookies is a known, accepted one, not an oversight.
+- `patient`-role logins get a "use the companion app" message instead of the dashboard — the persona
+  this system is designed around isn't the dashboard's user; `family_caregiver` is the only full-access
+  role.
+
+### Contract fix: `quiz/today` and `quiz/attempts` moved from JWT to device API key
+Caught while prepping the companion-app dispatch: `api-contract.md` had these marked JWT-only, but
+there's no patient login flow anywhere in the spec — the companion app is device-authenticated only.
+As written, the patient could never actually take the daily quiz from the app. Fixed in `backend-server`
+(`middleware/auth.js` now accepts `device_id` from query as well as body, since `quiz/today` is a GET;
+`quizController.getTodayQuiz` derives `patientId` from the authenticated device instead of trusting a
+client-supplied `patient_id` query param — tightens the same class of routes' security model, not just a
+compile fix; `recordAttempt` now 404s if the quiz question doesn't belong to the authenticated device's
+patient). `quiz/history` stays JWT — that one's genuinely dashboard-only. This is a breaking change to
+an already-"locked" contract page, called out here per the working agreement in `../CLAUDE.md`.
+
 ### Prisma CLI pinned to 6.19.3, not `latest`
 `npm install prisma@latest` resolved to `8.0.0-rc.13`, a pre-release with a completely different CLI (no
 `migrate dev` — it's built around Prisma's own cloud platform instead). Pinned both `prisma` and
