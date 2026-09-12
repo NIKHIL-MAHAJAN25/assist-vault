@@ -90,3 +90,71 @@ producing real log entries (build-order step 5, still not started).
   — none started.
 - No full emulator UI walkthrough was done on `companion-app` (compile + lint only) — worth a manual
   pass in Android Studio if UI-level bugs are a concern before relying on it.
+
+---
+
+## Session 5 — 2026-09-12 (into 09-13)
+
+**Scope**: UI/UX overhaul only. One shared visual language across `family-dashboard` and
+`companion-app`, derived from the user's existing `SellerApp` Android theme. No backend work, no
+contract changes, no new features. See [decisions-log.md](decisions-log.md) Session 5 for the
+palette provenance, the typeface reasoning, standing practice #9, and the mistakes found.
+
+**Done**:
+- **`family-dashboard`** — all 7 screens rebuilt on the "Assist Sage" system (login, timeline,
+  alerts, safe zones + map editor, face enrolment, daily quiz, device registration), plus the
+  shell (desktop sidebar / mobile rounded-top bottom bar) and the patient-role block screen.
+  Design layer: `tailwind.config.js` tokens, `src/index.css`, `src/ui/*` primitives,
+  `src/utils/datetime.js`.
+- **`companion-app`** — theme layer split into `ui/theme/{Color,Type,Shape,Theme}.kt`, five
+  shared components added under `ui/common/` (`AssistScaffold`, `AssistCard`, `StatusPill`,
+  `AssistTextField`, plus a rewritten `BigButton`), Atkinson Hyperlegible wired in as four
+  static TTFs in `res/font/`, and all 6 screens restyled.
+- **Per-repo `CLAUDE.md` created in both repos** (user decision A2, Session 6 of the decisions
+  log) — worker-authored, mechanics only, no rationale. `family-dashboard` 120 lines,
+  `companion-app` 81. The companion one carries this machine's build traps so no future worker
+  rediscovers them.
+
+**Verified — by the master directly, not from worker reports**:
+- `family-dashboard`: `npm run build` exits 0; every screen opened in a browser against the
+  running backend and the real Postgres data; times checked against raw ISO values
+  (`2026-09-07T05:13:14Z` → "10:43 AM" IST) after a formatting bug; console checked.
+- `companion-app`: `gradlew clean assembleDebug` from scratch (not incremental) → BUILD
+  SUCCESSFUL, 37 tasks executed, `app-debug.apk` 11.58 MB. `lintDebug` clean — 26 warnings, all
+  pre-existing. Grep audits: no bare `Card(`/`OutlinedTextField(`/`TextField(`/`Button(` in any
+  screen, all 6 screens open with `AssistScaffold`, `Color(0x` nowhere outside `theme/Color.kt`.
+- Preservation spot-checks: the Settings announce-toggle kept both its "Not available yet"
+  string and the comment explaining the backend can't identify *which* face; `RecallScreen`'s
+  `SpeechToText` / `DisposableEffect` / permission-launcher chain unchanged in behaviour.
+
+**Worker dispatch record** (7 workers, all as separate `claude -p` processes per the working
+agreement): FD-1 timeline+cards+alerts · FD-2 zones+map+faces · FD-3 quiz+devices · FD-4
+six-defect fix pass · FD-5 dashboard CLAUDE.md · CA-1/CA-1b companion theme + HomeScreen +
+fonts + build · CA-2 five screens + two Compose defects + companion CLAUDE.md. The first batch
+of four was silently gated by a wrong `--allowedTools` pattern and had to be re-verified by the
+master; see decisions-log Session 5, mistake 2.
+
+**Governance changes this session** (user decisions, recorded in `../CLAUDE.md` and
+decisions-log Session 6): two masters kept deliberately for this iteration phase;
+`ListAgents`-before-vault-write adopted as a standing practice; per-repo `CLAUDE.md` approved;
+and the architect/laborer rule replaced the absolute "master never writes sibling-repo code"
+line — the trigger is **accuracy under genuine complexity, never token-saving**. Both master
+sessions had argued for keeping it absolute; the user heard that and chose the narrower
+exception anyway.
+
+**Outstanding / next session**:
+- **Nothing is committed.** Both repos are entirely working-tree changes, deliberately left for
+  the user to review. `companion-app` also still carries a *pre-existing* uncommitted fix to
+  `service/MonitoringService.kt` from an earlier session (foreground-service-type handling so
+  frame capture survives a missing location permission) — untouched this session, don't lose it.
+- No emulator walkthrough of `companion-app` was done — compile, lint and code audit only. The
+  dashboard was exercised in a real browser; the Android app was not run on a device.
+- `RecallScreen`'s mic button has no leading icon: `Icons.Default.Mic` needs
+  `material-icons-extended`, which is not a dependency. Left text-only rather than adding a
+  dependency mid-restyle.
+- Still carried from earlier sessions: real `GEMINI_API_KEY` / `CLOUDINARY_*` values,
+  ESP32 firmware integration (build-order step 5), the watch app (Phase 3), and the Phase 1
+  agentic decision layer. None touched.
+- Environment, for whoever builds `companion-app` next: this machine's `JAVA_HOME` points at
+  JDK 25, which Gradle 8.7 rejects — build with `JAVA_HOME=D:\Java\JDK21`. Now documented in
+  that repo's own `CLAUDE.md`.
