@@ -51,19 +51,28 @@ for the full problem statement and design lens.
   true when this project was backend-only and sequential, false since Session 2 added `companion-app` and
   `family-dashboard` as separate repos, and never corrected until a Session 4 review caught the master
   doing app-repo work itself and traced it back to this stale line.)
-- **For UI/visual work specifically, the master's job stops at spec, dispatch, and verification — never
-  authorship.** This is the exact case that broke the rule above the same night it was written: a master
-  reasoned that building the whole design-system layer itself first was "foundational, so workers have
-  something to match," not "an implementation task," and wrote it anyway. There is no such carve-out.
-  Concretely: the master writes literal design-token values, requirements, and (once one exists) the path
-  to a real reference file — that's spec, and it's the master's job. If no reference example exists yet,
-  the master dispatches **one** worker to build the canonical layer plus one reference screen from that
-  literal spec, then dispatches the remaining screens against that real file, each pointed at it
-  explicitly — never builds the canonical layer itself "to save a round trip" or "so it's consistent."
-  Once work is dispatched, the master's own role is to verify what came back — open the dev server, look
-  at the actual rendered result, read the real diff — not to touch the application files itself under any
-  framing. The goal is that a human never has to catch this by watching the activity viewer and telling
-  the master to stop; the master should self-govern to this rule without needing to be told twice.
+- **Architect builds the plan, laborer lays the bricks — this is the user's own framing for where the
+  master/worker line sits, decided explicitly by the user on 2026-09-12, and it supersedes the stricter
+  "master never touches a sibling-repo file, no exceptions" version written earlier the same night.** The
+  master (architect) may author plans, specs, and literal-value artifacts — requirements, a path to a real
+  reference file, and specifically a plain, non-executable data file of literal values (e.g. a token/color
+  values file with no imports, no computed values, no logic) — for token-saving reasons: writing values
+  once as the master is cheaper than having a worker transcribe a wall of numbers it didn't choose. The
+  master never authors anything that is itself part of the build or render path — no `.jsx`/`.tsx`/`.kt`,
+  no `.css` a component actually imports, no page, no wiring of one thing to another. That "lay the bricks"
+  work is always a worker's job, dispatched with the master's literal values as its input, never
+  transcribed loosely from memory. When only one canonical example exists yet, the master dispatches
+  **one** worker to build it plus one reference screen, then dispatches the rest against that real file.
+  Once work is dispatched, the master verifies what came back — opens the dev server, looks at the actual
+  rendered result, reads the real diff — it doesn't just read a report of it.
+  (This line replaced an earlier one the same night that made the rule absolute with no exceptions, after
+  a master had used "this is foundational, not an implementation task" to justify writing an entire
+  design-system layer itself. Two sessions independently argued back to the absolute version and
+  recommended keeping it; the user weighed both arguments and explicitly chose to keep discretion for the
+  master instead, using the architect/laborer split as the standing test rather than a fixed file-type
+  boundary. If the master is ever unsure which side of that line something is on, it stops and asks the
+  user — this is exactly the class of judgment call that broke once already, so treat "I'm confident this
+  counts as architecture" with real suspicion, especially under any pressure to finish faster.)
 - **Session handoff discipline**: update `log.md` and `decisions-log.md` at the end of every real
   session, starting with session one.
 - Tools deliberately evaluated and not adopted for this project (Graphiti, Graphify, Munder Difflin) are
@@ -80,3 +89,15 @@ for the full problem statement and design lens.
   decision about the app being built — it edits the file directly in the same session rather than
   waiting to be asked, and notes briefly why. This applies only to how the agents work, never silently to
   what the app does; app-level judgment calls still go through the normal decision-log process above.
+- **Every sibling repo gets its own `CLAUDE.md`, written by a worker, never the master.** As the last step
+  of any canonical-layer task, the worker writes or updates that repo's own `CLAUDE.md` with mechanics
+  only — stack, build command, file layout, component signatures, what not to touch. It never restates a
+  decision or the rationale behind it; that belongs in this vault's `decisions-log.md`, and duplicating it
+  in a repo file is exactly how the two copies drift apart. Approved by the user 2026-09-12.
+- **Before either of two concurrently-running master sessions writes to `decisions-log.md` or `log.md`,
+  call `ListAgents` first.** If another vault-scoped session is live, message it and agree who writes
+  before touching the file. Cheap (one tool call) and it has an actual track record — this is the specific
+  thing that prevented a real collision the night it was adopted, not a theoretical safeguard. Running two
+  master sessions on this vault at once is itself a deliberate, temporary choice by the user while this
+  process is still being iterated on (2026-09-12) — not a standing recommendation — precisely so the two
+  sessions can compare notes and surface disagreements like this one to the user directly.

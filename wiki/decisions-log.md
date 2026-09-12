@@ -322,3 +322,37 @@ one; the other session stood down from writing it), but nothing in the working a
 genuinely conflicting write, and nothing states that there is meant to be exactly one master at a
 time. **Flagged to the user for a decision rather than resolved unilaterally** — a fix here changes how
 the agent system itself is governed, which is the user's call and not a master's.
+
+---
+
+## Session 6 — 2026-09-12 — User decisions on the four open questions from Session 5
+
+Both sessions had independently converged on recommendations for A1/A2/A3/A5 and put them to the user
+directly rather than deciding unilaterally. Recording the actual answers here, since a recommendation
+and a decision are not the same thing and only the second one governs going forward.
+
+1. **Two masters (A1): kept, deliberately, but scoped.** The user's own reasoning: this process is still
+   being iterated on, and having two master sessions able to compare notes and surface disagreements —
+   exactly what produced the architect/laborer decision below — is worth the doubled Opus-tier spend
+   *for now*. This is not a standing recommendation to run two masters going forward; it's a deliberate,
+   temporary choice tied to this being an active iteration phase. The `ListAgents`-before-write safeguard
+   is adopted as a standing practice regardless of how many masters are running — see `../CLAUDE.md`.
+
+2. **Per-repo `CLAUDE.md` (A2): approved as recommended**, worker-authored, mechanics only. See
+   `../CLAUDE.md`.
+
+3. **The spec-file carve-out (A5): the user overrode both sessions' recommendation.** Both sessions
+   independently argued for keeping the "master writes zero application-repo files, no exceptions" rule
+   absolute, for real reasons (a shared token file is only authoritative for the one repo that can import
+   it; transcription cost turned out to be small and checkable in practice). The user heard that argument
+   and explicitly chose the other direction anyway: **"architect builds the plan, laborer lays the
+   bricks"** — the master may author plans, specs, and literal-value data artifacts for token-saving
+   reasons, but never anything on the actual build/render path. This is now the standing rule in
+   `../CLAUDE.md`, not the absolute version either session recommended. Worth being honest about why this
+   is being recorded so explicitly: this is the exact rule that broke once already under a master's own
+   confident-but-wrong judgment call about what counts as "architecture" — the fix isn't a smarter rule,
+   it's requiring the master to ask when genuinely unsure rather than assume its own read is obviously
+   right.
+
+4. **Remaining companion-app screens (dispatch question): held, not by choice — the user hit a usage
+   limit mid-session.** Not a decision against dispatching; resume when the session picks back up.
