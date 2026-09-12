@@ -177,3 +177,148 @@ Use the flag at launch, not the in-session `/effort` command — on some models 
 effect in non-interactive (`-p`) mode. For dispatching several workers in a row, set
 `CLAUDE_CODE_EFFORT_LEVEL=high` once in the shell instead of repeating the flag on every call. Levels
 available: `low`, `medium`, `high`, `xhigh`, `max`.
+
+---
+
+## Session 4 — 2026-09-12 — Master was writing app code itself; the working agreement let it
+
+Caught via the Agent Office viewer (`D:\agent-office`): every observed action during a live session on
+`family-dashboard` — including editing `Login.jsx` directly via a Bash heredoc — was attributed to the
+master, not to any worker. Checked the transcript folders for all four sibling repos directly
+(`C:\Users\<user>\.claude\projects\D--<repo>`) to confirm rather than assume: none of them had ever been
+created, meaning no separate worker session had ever run for any of them, ever.
+
+Root cause traced back to `../CLAUDE.md`'s own "Master/slave subagent split" line, unedited since Session
+1: it still said the split was "not useful yet — Phase 0 backend work is sequential, single-repo." That
+stopped being true the moment Session 2 built `companion-app` and `family-dashboard` as separate repos,
+and nobody went back and fixed the line — so a master reading the working agreement top to bottom had a
+literal, written excuse not to delegate, on top of the fact that no bullet anywhere actually stated the
+dispatch *mechanism* as a hard rule (a separate `claude` CLI process, not the master editing sibling-repo
+files itself) rather than just describing how to write a good task prompt once dispatch happens.
+
+Fixed directly in `../CLAUDE.md`: the stale "not useful yet" qualifier is gone, and the line now states
+plainly that the master does not write application code in any sibling repo itself, regardless of how
+small the change looks, and names the exact dispatch mechanism. Logging this here per standing practice
+#8 — this is exactly the class of mistake (a stale instruction quietly contradicting newer ones) that
+practice exists to catch before it repeats.
+
+---
+
+## Session 5 — 2026-09-12 — UI overhaul: one design language across dashboard + companion app
+
+The dashboard and the companion app looked like two unrelated prototypes — the dashboard a stock
+Tailwind `slate`/`sky` admin panel, the companion app a Material3 default. The user asked for a single
+coherent visual system across both, taken from an existing Android app of theirs
+(`D:\AndroidStudioProjects\SellerApp`).
+
+### The palette is lifted, not invented
+
+`SellerApp/app/src/main/res/values/colors.xml` is the source of record: `bg #F9F8F4`,
+`bgslight #F0EFEA`, `bgdark #DCE2D8`, `darkgreen #698B6A`, heading ink `#495048`, plus the
+`#3B6D11`-on-`#E8F5E9` status chip already present in its `projectitem.xml`. Those hexes are used
+byte-for-byte in both repos so the two products read as one family rather than as two interpretations
+of a description. The extensions (clay `#8A4B12`, brick `#96392C`, slate-teal `#3F5F6B`, and the
+`sage-50..900` ramp) are derived, and are written literally into
+`family-dashboard/tailwind.config.js` and `companion-app/ui/theme/Color.kt`.
+
+Three motifs were carried over deliberately, because they are what makes SellerApp recognisable rather
+than merely tidy: the **40dp pill text field** on a `bgdark` fill with no stroke until focus; the
+**4px left accent rail** from `projectitem.xml` (now on every typed card in both apps, and on the
+dashboard's active nav item); and the **30dp rounded-top bottom bar** from `bottom_style.xml`, which
+became the dashboard's mobile navigation.
+
+### Contrast forced one deliberate deviation from the source palette
+
+`#698B6A` on white is 3.8:1 — fine for strokes, icons and display type, below AA for button labels.
+White text therefore sits on `sage-700 #4E6B50` (5.85:1), while `#698B6A` stays the brand accent
+everywhere it is not carrying small text. SellerApp itself puts white directly on `#698B6A`; this
+departure is intentional and the rule is written into both repos' token files.
+
+### Typefaces: Atkinson Hyperlegible in both, Fraunces on the dashboard only
+
+Body and UI text in both products is **Atkinson Hyperlegible** (Braille Institute, OFL). The honest
+framing, per the research-grounding discipline in [index.md](index.md): it was designed for **low
+vision** and character distinction, which is well documented; there is **no** dementia-specific
+evidence for it and none should be claimed anywhere in the report. It is a defensible choice for an
+older-adult audience, not a proven one.
+
+The dashboard additionally uses **Fraunces** (variable serif) for display headings. The companion app
+deliberately does **not**: at 48sp, for the primary persona, legibility beats typographic personality,
+and Fraunces ships only as a variable TTF, so using it on Android would mean variable-axis wiring on
+minSdk 26 for no user benefit. Cross-product unity comes from palette and shape grammar instead.
+Neither app uses Inter, at the user's explicit request.
+
+### New standing practice #9 — cross-cutting visual work needs a different dispatch shape
+
+Session 4's rule (the master never writes sibling-repo app code; everything goes to `claude -p`
+workers) has a real gap: fanning a **visual** change out to parallel workers is precisely how you get
+the non-uniformity the change was meant to fix. Six workers inventing six interpretations of "warm and
+sage" is worse than one bad theme. The resolution, adopted as standing practice #9 alongside Session
+3's list:
+
+> For any change that must look identical across many files, the master writes the token and primitive
+> spec as **literal values** in the task prompt — that is spec authoring, squarely the master's job,
+> and the same kind of work as writing a page in this wiki. **One** worker then builds the canonical
+> layer plus **one** fully-designed reference screen. Only after that layer exists are the remaining
+> screens dispatched, each pointed at the real reference file rather than at prose. Never dispatch
+> screen N in parallel with the design system screen N depends on.
+
+Both repos were run this way and it held up: five independently-dispatched screen workers produced
+output that needed defect fixes but needed no visual reconciliation with each other.
+
+### Disclosure — the dashboard design-system layer was master-written
+
+`family-dashboard`'s `tailwind.config.js`, `src/index.css`, `src/ui/*`, `Layout.jsx`, `Login.jsx`,
+`ProtectedRoute.jsx` and `StatusBanner.jsx` were written by the master before Session 4's corrected
+rule landed. Under the rule as it now stands that work should have been dispatched. It was kept rather
+than reverted: it was already built and verified in a browser against the live backend, and
+re-deriving working code through a worker purely to satisfy process would have destroyed value for no
+gain. Recorded here rather than left implicit. Everything after that point, including the entire
+`companion-app` theme layer, went through workers.
+
+### Mistakes found this session — logged per standing practice #8
+
+1. **Spawned `claude -p` workers could not authenticate at all.** Every dispatch died in under a
+   second with `Failed to authenticate: OAuth session expired and could not be refreshed`. Cause: the
+   desktop app refreshes its OAuth token in memory, while the on-disk `~/.claude/.credentials.json`
+   that a spawned child reads was days stale. Nothing about the task or the flags was wrong — it looks
+   exactly like a worker bug and is not one. **Fix: the user runs `claude` interactively and `/login`s
+   once; dispatch then works.** Check this first if a whole batch of workers dies instantly.
+
+2. **`--allowedTools "Bash(npm run build)"` silently gates every worker on Windows.** Workers here
+   drive the **`PowerShell`** tool, not `Bash`, so `Bash(...)` rules never match — and an exact-string
+   rule would not match a real invocation with a pipe or redirect anyway. Four workers wrote correct
+   code and then stalled asking for build approval that no human was watching for, which means
+   standing practice #4 ("the worker must actually run the code") was silently unenforceable for the
+   whole first batch. **Fix: grant both tool names with prefix patterns**, e.g.
+   `--allowedTools "Bash(npm:*) PowerShell(npm:*) PowerShell(./gradlew.bat:*) PowerShell(Invoke-WebRequest:*)"`.
+   Verify with a one-line throwaway worker (`-p "run node --version and report it"`) before dispatching
+   a real batch — that probe costs seconds and would have caught this immediately.
+
+3. **A blocked worker report can still be trustworthy — if it says so plainly.** The safe-zones/faces
+   worker, unable to build, wrote: *"I'd still ask that someone with shell access run `npm run build`
+   before merging, since that's the one check I couldn't execute myself."* That is exactly the
+   behaviour practice #4 is trying to produce, and it is worth keeping as the reference example. The
+   workers that simply stopped and asked a question into a void nobody was reading are the
+   counter-example — a `-p` worker has no one to ask, so its prompt should tell it to finish what it
+   can and report the gap rather than halt.
+
+4. **A green build is not a done-check for visual work.** Three defects passed `npm run build` cleanly
+   and were only caught by the master looking at the running app: a `grid-cols-[180px_1fr]` card body
+   squeezed every non-`frame` log entry into the 180px track (the image meant to fill it only renders
+   for `frame` entries); times rendered as `16:43 AM` because `hour: 'numeric'` without an explicit
+   `hour12` let the host locale emit a 24-hour clock *and* a day period; and a raw `false` leaked into
+   the UI where a caregiver reads it. A separate reading pass over the Compose diff caught two more
+   that would equally have compiled — `AssistScaffold` with no vertical padding at all, `AssistCard`
+   with no gap between its lines. **Practice #4 needs an explicit rider for UI tasks: the master
+   renders the result and reads the diff; the worker's build passing proves nothing about how it
+   looks.**
+
+### Structural gap: two sessions were both acting as master
+
+For part of this session two Claude sessions held vault write access and both believed they were the
+master. They coordinated by message and avoided colliding on this file (this entry is the firsthand
+one; the other session stood down from writing it), but nothing in the working agreement prevents a
+genuinely conflicting write, and nothing states that there is meant to be exactly one master at a
+time. **Flagged to the user for a decision rather than resolved unilaterally** — a fix here changes how
+the agent system itself is governed, which is the user's call and not a master's.

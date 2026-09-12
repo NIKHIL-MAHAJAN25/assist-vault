@@ -39,11 +39,31 @@ for the full problem statement and design lens.
   same session.
 - **Schema changes go through Prisma migrations only** (`npx prisma migrate dev` in `backend-server`),
   never hand-edited against the live database. Follow the normalization rules in `db-schema.md`.
-- **Master/slave subagent split** (from Phase 1 onward, once the API contract is locked): a master
-  session (Opus, holds vault access) is the only writer to `decisions-log.md` and `log.md`; slave
-  subagents are scoped per-repo (`model: sonnet` set explicitly in their frontmatter — it does not
-  inherit), have no vault directory access, and receive the relevant wiki slice pasted directly into
-  their task prompt. Not useful yet — Phase 0 backend work is sequential, single-repo.
+- **Master/slave subagent split — active now, not deferred.** The master (Opus, holds vault access) is
+  the only writer to `decisions-log.md` and `log.md`, and does **not** write application code in any
+  sibling repo itself, no matter how small the change looks. Work is dispatched to workers as genuinely
+  separate `claude` CLI processes — via Bash, `claude --model sonnet --effort high -p "<task>"` run with
+  cwd set to the target repo — not as the master editing those repos' files directly, and not as an
+  in-process subagent. Each worker gets the relevant wiki slice pasted directly into its task prompt; it
+  has no vault directory access of its own. "This is quick, I'll just do it myself" is not an exception to
+  this rule — dispatch it as a one-line worker task instead.
+  (This replaces an earlier version of this line that called the split "not useful yet" for Phase 0 —
+  true when this project was backend-only and sequential, false since Session 2 added `companion-app` and
+  `family-dashboard` as separate repos, and never corrected until a Session 4 review caught the master
+  doing app-repo work itself and traced it back to this stale line.)
+- **For UI/visual work specifically, the master's job stops at spec, dispatch, and verification — never
+  authorship.** This is the exact case that broke the rule above the same night it was written: a master
+  reasoned that building the whole design-system layer itself first was "foundational, so workers have
+  something to match," not "an implementation task," and wrote it anyway. There is no such carve-out.
+  Concretely: the master writes literal design-token values, requirements, and (once one exists) the path
+  to a real reference file — that's spec, and it's the master's job. If no reference example exists yet,
+  the master dispatches **one** worker to build the canonical layer plus one reference screen from that
+  literal spec, then dispatches the remaining screens against that real file, each pointed at it
+  explicitly — never builds the canonical layer itself "to save a round trip" or "so it's consistent."
+  Once work is dispatched, the master's own role is to verify what came back — open the dev server, look
+  at the actual rendered result, read the real diff — not to touch the application files itself under any
+  framing. The goal is that a human never has to catch this by watching the activity viewer and telling
+  the master to stop; the master should self-govern to this rule without needing to be told twice.
 - **Session handoff discipline**: update `log.md` and `decisions-log.md` at the end of every real
   session, starting with session one.
 - Tools deliberately evaluated and not adopted for this project (Graphiti, Graphify, Munder Difflin) are
