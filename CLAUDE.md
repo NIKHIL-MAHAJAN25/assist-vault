@@ -51,28 +51,38 @@ for the full problem statement and design lens.
   true when this project was backend-only and sequential, false since Session 2 added `companion-app` and
   `family-dashboard` as separate repos, and never corrected until a Session 4 review caught the master
   doing app-repo work itself and traced it back to this stale line.)
-- **Architect builds the plan, laborer lays the bricks — the user's own framing, decided explicitly on
-  2026-09-12, refined once more the same day after a first pass got the justification wrong.** The test is
-  **accuracy under genuine complexity, never token-saving.** The master may do a piece of implementation
-  work itself, instead of dispatching it, only when *both* hold: (1) the task is genuinely complex — not
-  merely larger, but the specific kind where a worker plausibly gets it wrong because of real judgment or
-  subtlety involved — and (2) the master isn't confident a worker would execute it correctly. When both
-  hold, spend the extra cost of doing it directly rather than risk a wrong result from delegating something
-  too hard; that is the entire justification. It is never "this is cheaper if I just do it," and it is never
-  a blanket allowance for spec-shaped or plan-shaped work in general — most tasks, including most spec
-  work, are routine enough to delegate, and delegating is still the default there because token-saving *is*
-  the point for ordinary work. This is a narrow exception for hard cases, not a standing category.
-  The master has to actually be able to tell "this is routine, delegate it" apart from "this is genuinely
-  complex, doing it myself is the accurate choice" — and given this is exactly the class of judgment call
-  that broke once already that same night (a master used "this is foundational, not an implementation
-  task" to justify writing an entire design-system layer itself), when genuinely unsure which side
-  something falls on, the master stops and asks the user rather than trusting its own confidence. Treat "I'm
-  sure this one counts" with real suspicion, especially under any pressure to finish faster. Two sessions
-  independently argued for making the rule absolute instead, for real reasons (a shared spec file is only
-  ever authoritative for whichever repos can consume it; transcription overhead turned out to be small and
-  checkable in practice) — the user heard that and chose this narrower exception over the absolute version
-  anyway. Once work is dispatched, the master still verifies what came back itself — opens the dev server,
-  looks at the actual rendered result, reads the real diff — rather than trusting a report of it.
+- **Architect builds the plan, laborer lays the bricks — final form, converged on by the user and both
+  sessions on 2026-09-12 after three earlier passes each had a real flaw.** The master **always dispatches
+  to a worker first, on every task, with no exception on a first attempt** — not even when the master
+  believes the task is too complex or too subtle for a worker to get right. The master may only do a piece
+  of implementation work directly after a **demonstrated failure**, precisely defined: the dispatch itself
+  must have been sound — correct tool-permission names for what the worker actually drives (see the
+  dispatch-hygiene practice), the non-interactive-worker clause present in the prompt, real spec text
+  pasted verbatim, and a done-check the worker could actually execute. If any of those were missing, that
+  is not a demonstrated failure — it's a bad dispatch; fix it and re-run. Skipping this definition is what
+  makes the exception exploitable: a master that wants the work can otherwise manufacture a "failure" by
+  dispatching badly, without even doing it on purpose.
+  **Why this is the rule, in order of how much weight each reason carries:**
+  1. The master has proven unreliable at predicting whether a worker can do something — its confident,
+     specific belief that workers couldn't hold visual consistency across seven screens was wrong; workers
+     held it perfectly. Self-assessment ("I don't think a worker can do this") is the exact judgment that
+     already failed once; a rule that depends on it just relocates the failure.
+  2. **This makes the master's judgment falsifiable and logged instead of self-certifying.** Under
+     discretion, "this one needs me" leaves no trace and is never checked. Under this rule, every such
+     instinct becomes a dispatch with a recorded outcome — real calibration data across many sessions
+     instead of one session's anecdote.
+  3. The downside is bounded either way this can go wrong: dispatching first costs at most one extra
+     worker run in the worst case; letting the master decide upfront is unbounded, since an overconfident
+     master can author an entire layer before anyone notices — which is precisely what happened the one
+     time this was tried. Bounded-versus-unbounded dominates even before counting tokens.
+  4. Cost is real but conditional, not the foundation: dispatching first is cheaper than direct authorship
+     specifically when the worker's success rate is high enough to clear the price gap between models — on
+     tonight's evidence it clearly is, but this is an empirical claim that can go stale, not a fact about
+     Sonnet's price list. **If observed worker success on well-specified tasks ever drops materially,
+     revisit this rule** — the case for it weakens exactly as that number falls, and if workers started
+     failing most of the time the economics would flip and favor direct authorship instead.
+  Once work is dispatched, the master still verifies what came back itself — opens the dev server, looks at
+  the actual rendered result, reads the real diff — rather than trusting a report of it, exactly as before.
 - **Session handoff discipline**: update `log.md` and `decisions-log.md` at the end of every real
   session, starting with session one.
 - Tools deliberately evaluated and not adopted for this project (Graphiti, Graphify, Munder Difflin) are

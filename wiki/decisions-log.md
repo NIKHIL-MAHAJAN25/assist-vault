@@ -147,7 +147,12 @@ after repeated sessions of eyeballing worker output and taking self-reports at f
    "hitting this endpoint must return this exact shape" — not "implement X" left open-ended.
 4. **The worker must actually run the code, not just write it and assert it works.** Tests passing, a
    server responding, a screenshot of a rendered page — real output, not the model's own read of its own
-   code.
+   code. **For UI/visual work, a green build proves nothing about how it looks** — six real defects
+   (a crushed grid track, a 24-hour clock rendering as `16:43 AM`, a raw `false` shown to a caregiver, and
+   two Compose layout defects) all passed `npm run build` cleanly and were only caught by the master
+   actually rendering the app and reading the diff. The worker's done-check for a UI task is "it builds
+   and matches the reference file structurally"; "it looks right" is always the master's own check, done by
+   looking, never delegated further and never satisfied by a passing build.
 5. **No coverage in the vault is a stop sign, not room to improvise.** If a worker can't point to the
    line in the spec covering what it's about to build, it stops and asks the master instead of inventing
    something plausible.
@@ -161,6 +166,27 @@ after repeated sessions of eyeballing worker output and taking self-reports at f
    that touch the same area.** Enforce this heavily — it's the only mechanism that lets these practices
    actually improve over time instead of the same class of mistake getting quietly re-made by a different
    worker later. Skipping this step defeats the entire point of keeping this log.
+9. **For consistency across several files (a design system, a shared component set), one worker builds
+   the canonical layer plus one reference screen from the master's literal spec values; every other file
+   is then dispatched against that real reference, pointed at it explicitly — never described in prose.**
+   This sequencing is what produces real uniformity, not who authored the canonical layer; promoted from
+   prose to a numbered practice after it was the thing that actually worked (five parallel screen workers
+   against a real reference file needed zero reconciliation) while the debate over whether the master
+   should write the canonical layer itself turned out to matter far less than assumed.
+10. **Dispatch hygiene — the mistakes that cost real damage tonight, none of which are about who writes
+   code.** (a) `--allowedTools` must name the tool the worker actually drives on this machine — a rule
+   written as `Bash(npm run build)` silently gates every worker that drives `PowerShell` instead, and the
+   failure is invisible until reports come back; grant both with prefix patterns
+   (`Bash(npm:*) PowerShell(npm:*) PowerShell(./gradlew.bat:*)`), and verify with a one-line throwaway
+   worker (`-p "run node --version and report it"`) before a real batch, not after losing one. (b) Every
+   worker prompt includes, verbatim: *"You are a non-interactive `claude -p` process. No human is reading
+   your output and no one will answer a question you ask. If something blocks you, do everything that is
+   not blocked, then state the blockage explicitly in your final report and stop. Never end your turn with
+   a question."* Without it, a blocked worker ends its turn asking a question into a void and exits 0 —
+   indistinguishable from success unless someone reads the transcript. (c) When a worker pays context to
+   discover an environment fact (a `JAVA_HOME` override, a shell-quoting trap, a stale-cache fix), that
+   fact goes into the next prompt and into the repo's own `CLAUDE.md` the same session — or the next
+   worker pays to rediscover it.
 
 ### Worker processes run at high thinking effort, independent of model tier
 Each worker is spawned as its own `claude -p` process from the master's shell, so its thinking effort can
@@ -361,3 +387,48 @@ and a decision are not the same thing and only the second one governs going forw
 
 4. **Remaining companion-app screens (dispatch question): held, not by choice — the user hit a usage
    limit mid-session.** Not a decision against dispatching; resume when the session picks back up.
+
+---
+
+## Session 7 — 2026-09-13 — Architect/laborer, final form: dispatch always comes first
+
+Session 6 recorded the user's decision to keep discretion (architect/laborer) over the absolute rule
+both sessions had recommended, with the test corrected same-day to "accuracy under genuine complexity,"
+not token-saving. This session traced the actual consequence of that wording and found a real problem
+with it, then corrected it again — the fourth pass at this exact rule in about a day.
+
+**The problem, caught by tracing control flow rather than debating intent again:** the corrected rule
+from Session 6 still asked the master to judge, upfront, whether it was "confident a worker would
+execute it correctly." That is a prediction about the worker, and the master has demonstrated poor
+calibration on exactly that prediction — it was confident workers couldn't hold visual consistency
+across seven screens, and wrong. A rule whose gate is the master's own confidence just relocates the
+failure mode that broke the previous version; it doesn't close it.
+
+**The fix, arrived at jointly:** the master now always dispatches to a worker first, on every task, with
+no exception on a first attempt, regardless of how complex the master believes the task to be. Direct
+authorship is reachable only after a **demonstrated failure** — and that term is now defined precisely,
+because it was the next hatch: a failure only counts if the dispatch itself was sound (correct
+tool-permission names, the non-interactive-worker clause present, real spec text, an executable
+done-check). A failure caused by a bad dispatch is not evidence the task needed the master — it's
+evidence to fix the dispatch and re-run.
+
+**Why this is the rule, and why the reasons are ranked the way they are in `../CLAUDE.md`:** the leading
+argument is the master's demonstrated unreliability at self-assessment, not economics — cost is real but
+conditional (dispatching first is cheaper only while worker success rates stay high enough to clear the
+price gap between models, which is an empirical claim that can go stale, not a fact about a price list).
+An earlier pass in this session justified the rule primarily on Sonnet being cheaper per token; that was
+wrong on its own terms — the correct comparison is `P(success)·cheap + P(fail)·(cheap + expensive)`
+against `expensive`, which only favors dispatching first when the success rate clears the price ratio,
+not simply because one model is cheaper than the other. The strongest argument turned out not to be a
+cost argument at all: forcing dispatch-first makes the master's "this one needs me" instinct falsifiable
+and logged, generating real calibration data across many sessions, instead of a self-certifying belief
+that leaves no trace to check against.
+
+Two sessions converging back toward something close to the absolute rule both had originally argued for
+is a pattern worth naming rather than presenting as a neutral tightening — this entry does that
+explicitly rather than letting the user discover it from the control flow later. The user was asked
+directly whether this was intended and confirmed it, on the economic framing as corrected in this entry,
+after asking both sessions to independently verify agreement rather than accept a summary. Standing
+practices #9 (canonical-worker-then-reference) and #10 (dispatch hygiene) were promoted from prose to
+numbered practices in this same session, since #10 in particular is the mechanism that makes "demonstrated
+failure" meaningful rather than exploitable.
