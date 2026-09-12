@@ -432,3 +432,64 @@ after asking both sessions to independently verify agreement rather than accept 
 practices #9 (canonical-worker-then-reference) and #10 (dispatch hygiene) were promoted from prose to
 numbered practices in this same session, since #10 in particular is the mechanism that makes "demonstrated
 failure" meaningful rather than exploitable.
+
+---
+
+## Session 5 — correction — 2026-09-13 — one of the logged defects was not real
+
+Retracting part of mistake 4 in the Session 5 entry above. It reported that "times rendered as
+`16:43 AM` because `hour: 'numeric'` without an explicit `hour12` let the host locale emit a
+24-hour clock *and* a day period." **That defect never existed.** Both the claim and the
+mechanism given for it were wrong.
+
+What actually happened: the master read `10:43 AM` as `16:43 AM` off an 800px-wide screenshot of
+a 1400px viewport. At that scale Atkinson Hyperlegible's `0` is easily taken for a `6`. The
+misreading happened twice — once before the fix and once after — which is what made it look like
+a real bug that had been fixed rather than a constant that was never wrong.
+
+Verified in the live page afterwards, against the actual DOM rather than pixels, for
+`2026-09-07T05:13:14.334Z` on this machine (en-US, Asia/Calcutta):
+
+| version | output |
+|---|---|
+| original `toLocaleString()` | `9/7/2026, 10:43:14 AM` |
+| after FD-1, no `hour12` | `10:43 AM` |
+| after FD-4, explicit `hour12` | `10:43 AM` |
+
+The stated mechanism was also wrong on its own terms: `hour: 'numeric'` without `hour12` yields
+either a 12-hour clock with a day period or a 24-hour clock without one, depending on locale. It
+does not produce a 24-hour hour with an `AM` appended. There was no combination here that could
+have rendered `16:43 AM`.
+
+`src/utils/datetime.js` is still worth keeping, but for the reasons that are actually true rather
+than the one that was claimed: it removes host-locale dependence from the rendered output, it
+dropped the seconds that `QuizHistory`'s `AttemptRow` was showing via a bare `toLocaleTimeString()`
+(that part was a real if minor defect), it adds null/invalid-date handling, and it replaces three
+inline call sites with one formatter. None of that is a bug fix.
+
+Two things this invalidates, both of which were already stated elsewhere as fact and should not be
+relied on:
+- The Session 5 claim that "three defects passed `npm run build` cleanly" — it was two: the
+  `grid-cols-[180px_1fr]` column collapse and the raw `false` rendering. Both of those are real
+  and independently re-confirmed.
+- The `family-dashboard` commit message on `c425465`, which repeats the `16:43 AM` claim verbatim.
+  The commit is not being rewritten; this entry is the correction of record.
+
+### The practice lesson, which is the actual reason this is logged
+A downscaled screenshot is sufficient evidence for layout, spacing and colour. It is **not**
+sufficient evidence for anything textual — digits, timestamps, IDs, hashes, coordinates. Reading
+text off a scaled screenshot and then acting on it is how a defect gets invented out of nothing,
+a worker gets dispatched to fix it, and the fix gets written up as a success. Text claims get read
+out of the DOM (`textContent`) or the source, never off an image.
+
+Worth noting against standing practice #7's UI clause, added the same night: "the master renders
+the result and looks at it" is necessary but it has its own failure mode, and this is it. Looking
+is not the same as measuring. The same session that added that clause then produced a false defect
+report by over-trusting it within hours.
+
+The other direction of this is the one that stings: the *real* defect in the same component — a
+`pl-1` alongside `p-5` silently collapsing the accent-rail gutter from 24px to 4px, since Tailwind
+resolves `pl-*` over `p-*` by stylesheet order instead of adding — sat in every accented card
+across the whole dashboard through multiple master review passes and several screenshots, and was
+caught by the **user**, not by any agent. Screenshots were reviewed; nothing was measured. Both
+failures have the same root: inspection was treated as verification.
