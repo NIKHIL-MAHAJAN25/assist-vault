@@ -128,3 +128,52 @@ Phase 2 scope (facial recognition) — installing that dependency and wiring det
 building ahead of the phase it belongs to. Phase 0's route accepts `reference_embedding` (the descriptor
 array) directly from the caller instead, so the table/route shape exists and is testable today; Phase 2
 adds the `reference_image` → descriptor computation in front of it without changing the stored shape.
+
+---
+
+## Session 3 — 2026-09-12 — Standing practices for master/worker task dispatch
+
+Not a one-off decision — these are standing rules for how the master (Opus) hands work to worker
+sessions (Sonnet) from here on, under the master/slave split in `../CLAUDE.md`. Adopted specifically to
+cut down on made-up ("hallucinated") behavior and to make "the task is done" mean something checkable,
+after repeated sessions of eyeballing worker output and taking self-reports at face value.
+
+1. **Paste the real spec text into every task, never a paraphrase.** The master quotes the actual
+   wording from `api-contract.md` / `db-schema.md` / whichever page applies, not its own summary of it.
+   A summary is where small drift enters and gets built on as if it were the rule.
+2. **One small task per dispatch, not a whole feature.** "Add this one route" instead of "build the
+   login feature." Bigger, vaguer tasks leave gaps a worker fills with guesses.
+3. **Every task states a concrete definition of done.** A specific check — "must pass `npm test`",
+   "hitting this endpoint must return this exact shape" — not "implement X" left open-ended.
+4. **The worker must actually run the code, not just write it and assert it works.** Tests passing, a
+   server responding, a screenshot of a rendered page — real output, not the model's own read of its own
+   code.
+5. **No coverage in the vault is a stop sign, not room to improvise.** If a worker can't point to the
+   line in the spec covering what it's about to build, it stops and asks the master instead of inventing
+   something plausible.
+6. **Point workers at one real existing example to match**, not a written description of the style —
+   copying a working pattern is far more reliable than following prose about the pattern.
+7. **The master scrutinizes the actual diff itself before accepting a task — not the worker's summary of
+   the diff.** This is not optional and not delegated further: a report of work can look right even when
+   the underlying change isn't; the master reads the real change before it gets marked accepted or
+   written into this log.
+8. **Every mistake found, in any task, gets logged here immediately and carried into future task prompts
+   that touch the same area.** Enforce this heavily — it's the only mechanism that lets these practices
+   actually improve over time instead of the same class of mistake getting quietly re-made by a different
+   worker later. Skipping this step defeats the entire point of keeping this log.
+
+### Worker processes run at high thinking effort, independent of model tier
+Each worker is spawned as its own `claude -p` process from the master's shell, so its thinking effort can
+be set independently of both the master's effort and the model tier — the whole point of the master/slave
+split is cheap model + strong output on the worker side, and effort level is the knob that buys the
+"strong output" half without switching the worker off Sonnet. Set via the `--effort` flag at launch
+(confirmed against Claude Code's own docs, 2026-09-12):
+
+```powershell
+claude --model sonnet --effort high -p "task text here"
+```
+
+Use the flag at launch, not the in-session `/effort` command — on some models `/effort` doesn't take
+effect in non-interactive (`-p`) mode. For dispatching several workers in a row, set
+`CLAUDE_CODE_EFFORT_LEVEL=high` once in the shell instead of repeating the flag on every call. Levels
+available: `low`, `medium`, `high`, `xhigh`, `max`.

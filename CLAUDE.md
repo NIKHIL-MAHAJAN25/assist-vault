@@ -48,3 +48,15 @@ for the full problem statement and design lens.
   session, starting with session one.
 - Tools deliberately evaluated and not adopted for this project (Graphiti, Graphify, Munder Difflin) are
   recorded in `decisions-log.md` — don't re-propose them without re-reading why they were deferred.
+- **Standing dispatch practices** for how the master hands work to workers (real spec text not
+  paraphrase, small tasks, concrete done-checks, workers must actually run the code, no vault coverage
+  is a stop sign not a guess, match a real example, master scrutinizes the real diff, log every mistake
+  found) are recorded in `decisions-log.md` Session 3 — apply them to every task dispatch, not just that
+  session's. A live view of master/worker activity is available via the reusable viewer at
+  `D:\agent-office` (`node D:\agent-office\watch.js "D:\AssistVault"`, then open `http://localhost:4545`)
+  — it self-configures off this vault's own `additionalDirectories`, nothing to edit per project.
+- **Self-improvement of these practices.** If the master notices a flaw or a missing case in this file,
+  in `decisions-log.md`'s standing practices, or in the working agreement itself — as opposed to a
+  decision about the app being built — it edits the file directly in the same session rather than
+  waiting to be asked, and notes briefly why. This applies only to how the agents work, never silently to
+  what the app does; app-level judgment calls still go through the normal decision-log process above.
