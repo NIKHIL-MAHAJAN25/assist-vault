@@ -501,3 +501,27 @@ resolves `pl-*` over `p-*` by stylesheet order instead of adding — sat in ever
 across the whole dashboard through multiple master review passes and several screenshots, and was
 caught by the **user**, not by any agent. Screenshots were reviewed; nothing was measured. Both
 failures have the same root: inspection was treated as verification.
+
+---
+
+## Session 8 — 2026-09-13 — A narrow, checkable exception to dispatch-first
+
+The `Card.jsx` fix above was made by the master directly, on the user's own instruction given in the
+moment: for a change this small, dispatching a worker doesn't make sense. That's correct, and it
+directly contradicts Session 7's "dispatch always comes first, no exception on a first attempt" — so
+the rule needed an exception rather than a violation quietly standing next to it.
+
+The exception, confirmed with the user: the master may act directly, no dispatch, only when the
+complete diff is known before starting **and** it's confined to one file. Both are checkable facts,
+not a judgment about size — "small" was rejected on purpose, since "this is obviously simple" is the
+same shape of self-assessment that produced the original failure (an entire design-system layer
+written under the belief that it was "foundational, not implementation"). "The exact before/after
+change can be stated before touching the file" is a materially different, harder-to-lawyer claim: the
+`Card.jsx` fix passes it (the change was known: stop absolutely positioning the rail, make it a flex
+child, the padding fix follows automatically); the design-system layer fails it outright, since it was
+written by discovering what it needed to be as it went, one primitive at a time, with no diff anyone
+could have stated in advance.
+
+The general shape worth remembering: an absolute rule survives contact with a genuinely obvious
+counterexample only if it can name, precisely, what makes the counterexample different — not by being
+relaxed on vibes when someone hits an inconvenient case.

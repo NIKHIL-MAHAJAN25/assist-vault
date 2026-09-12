@@ -83,6 +83,16 @@ for the full problem statement and design lens.
      failing most of the time the economics would flip and favor direct authorship instead.
   Once work is dispatched, the master still verifies what came back itself — opens the dev server, looks at
   the actual rendered result, reads the real diff — rather than trusting a report of it, exactly as before.
+  **One narrow exception to dispatch-first, added 2026-09-13 on the user's direct instruction, defined by
+  two checkable facts rather than a feeling of smallness:** the master may make the change itself, with no
+  dispatch, only when *both* hold — (1) the complete diff is known before starting, meaning the master can
+  state the exact before/after change without exploring or deciding anything while writing it, and (2) it
+  is confined to one file. Fails either clause, dispatch first as normal — this is not a "small changes"
+  exception, since "small" is exactly the judgment that produced the original failure; it is a
+  "nothing-left-to-figure-out" exception, which is a materially different and checkable claim. The
+  design-system incident that started this whole rule fails clause (1) outright — it was written by
+  discovering what it needed to be as it went, not by stating a known diff up front. A one-file fix whose
+  exact lines the master could already write down before touching the file passes both.
 - **Session handoff discipline**: update `log.md` and `decisions-log.md` at the end of every real
   session, starting with session one.
 - Tools deliberately evaluated and not adopted for this project (Graphiti, Graphify, Munder Difflin) are
