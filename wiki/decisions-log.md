@@ -147,9 +147,9 @@ after repeated sessions of eyeballing worker output and taking self-reports at f
    "hitting this endpoint must return this exact shape" — not "implement X" left open-ended.
 4. **The worker must actually run the code, not just write it and assert it works.** Tests passing, a
    server responding, a screenshot of a rendered page — real output, not the model's own read of its own
-   code. **For UI/visual work, a green build proves nothing about how it looks** — six real defects
-   (a crushed grid track, a 24-hour clock rendering as `16:43 AM`, a raw `false` shown to a caregiver, and
-   two Compose layout defects) all passed `npm run build` cleanly and were only caught by the master
+   code. **For UI/visual work, a green build proves nothing about how it looks** — real defects
+   (a crushed grid track, a raw `false` shown to a caregiver, and two Compose layout defects) all passed
+   `npm run build` cleanly and were only caught by the master
    actually rendering the app and reading the diff. The worker's done-check for a UI task is "it builds
    and matches the reference file structurally"; "it looks right" is always the master's own check, done by
    looking, never delegated further and never satisfied by a passing build.
@@ -161,7 +161,15 @@ after repeated sessions of eyeballing worker output and taking self-reports at f
 7. **The master scrutinizes the actual diff itself before accepting a task — not the worker's summary of
    the diff.** This is not optional and not delegated further: a report of work can look right even when
    the underlying change isn't; the master reads the real change before it gets marked accepted or
-   written into this log.
+   written into this log. **Looking is not measuring.** The session that wrote the UI-rendering rider on
+   practice #4 demonstrated its failure mode within hours: a genuinely real spacing bug (a card's padding
+   silently collapsing from 24px to 4px) survived several of the master's own review passes and
+   screenshots, and was caught by the user, not by rendering-and-looking. In the other direction, the same
+   master invented a defect that never existed by misreading a digit off a downscaled screenshot. The
+   pattern in both: a downscaled screenshot is adequate evidence for whether something is obviously broken
+   at a glance, and inadequate as evidence for anything precise — text, digits, timestamps, IDs, exact
+   spacing. A claim about text comes from `textContent` or the source, never an image read. A claim about
+   spacing worth acting on comes from a computed style, not an eyeballed picture.
 8. **Every mistake found, in any task, gets logged here immediately and carried into future task prompts
    that touch the same area.** Enforce this heavily — it's the only mechanism that lets these practices
    actually improve over time instead of the same class of mistake getting quietly re-made by a different
