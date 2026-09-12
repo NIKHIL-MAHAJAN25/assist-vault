@@ -51,28 +51,28 @@ for the full problem statement and design lens.
   true when this project was backend-only and sequential, false since Session 2 added `companion-app` and
   `family-dashboard` as separate repos, and never corrected until a Session 4 review caught the master
   doing app-repo work itself and traced it back to this stale line.)
-- **Architect builds the plan, laborer lays the bricks — this is the user's own framing for where the
-  master/worker line sits, decided explicitly by the user on 2026-09-12, and it supersedes the stricter
-  "master never touches a sibling-repo file, no exceptions" version written earlier the same night.** The
-  master (architect) may author plans, specs, and literal-value artifacts — requirements, a path to a real
-  reference file, and specifically a plain, non-executable data file of literal values (e.g. a token/color
-  values file with no imports, no computed values, no logic) — for token-saving reasons: writing values
-  once as the master is cheaper than having a worker transcribe a wall of numbers it didn't choose. The
-  master never authors anything that is itself part of the build or render path — no `.jsx`/`.tsx`/`.kt`,
-  no `.css` a component actually imports, no page, no wiring of one thing to another. That "lay the bricks"
-  work is always a worker's job, dispatched with the master's literal values as its input, never
-  transcribed loosely from memory. When only one canonical example exists yet, the master dispatches
-  **one** worker to build it plus one reference screen, then dispatches the rest against that real file.
-  Once work is dispatched, the master verifies what came back — opens the dev server, looks at the actual
-  rendered result, reads the real diff — it doesn't just read a report of it.
-  (This line replaced an earlier one the same night that made the rule absolute with no exceptions, after
-  a master had used "this is foundational, not an implementation task" to justify writing an entire
-  design-system layer itself. Two sessions independently argued back to the absolute version and
-  recommended keeping it; the user weighed both arguments and explicitly chose to keep discretion for the
-  master instead, using the architect/laborer split as the standing test rather than a fixed file-type
-  boundary. If the master is ever unsure which side of that line something is on, it stops and asks the
-  user — this is exactly the class of judgment call that broke once already, so treat "I'm confident this
-  counts as architecture" with real suspicion, especially under any pressure to finish faster.)
+- **Architect builds the plan, laborer lays the bricks — the user's own framing, decided explicitly on
+  2026-09-12, refined once more the same day after a first pass got the justification wrong.** The test is
+  **accuracy under genuine complexity, never token-saving.** The master may do a piece of implementation
+  work itself, instead of dispatching it, only when *both* hold: (1) the task is genuinely complex — not
+  merely larger, but the specific kind where a worker plausibly gets it wrong because of real judgment or
+  subtlety involved — and (2) the master isn't confident a worker would execute it correctly. When both
+  hold, spend the extra cost of doing it directly rather than risk a wrong result from delegating something
+  too hard; that is the entire justification. It is never "this is cheaper if I just do it," and it is never
+  a blanket allowance for spec-shaped or plan-shaped work in general — most tasks, including most spec
+  work, are routine enough to delegate, and delegating is still the default there because token-saving *is*
+  the point for ordinary work. This is a narrow exception for hard cases, not a standing category.
+  The master has to actually be able to tell "this is routine, delegate it" apart from "this is genuinely
+  complex, doing it myself is the accurate choice" — and given this is exactly the class of judgment call
+  that broke once already that same night (a master used "this is foundational, not an implementation
+  task" to justify writing an entire design-system layer itself), when genuinely unsure which side
+  something falls on, the master stops and asks the user rather than trusting its own confidence. Treat "I'm
+  sure this one counts" with real suspicion, especially under any pressure to finish faster. Two sessions
+  independently argued for making the rule absolute instead, for real reasons (a shared spec file is only
+  ever authoritative for whichever repos can consume it; transcription overhead turned out to be small and
+  checkable in practice) — the user heard that and chose this narrower exception over the absolute version
+  anyway. Once work is dispatched, the master still verifies what came back itself — opens the dev server,
+  looks at the actual rendered result, reads the real diff — rather than trusting a report of it.
 - **Session handoff discipline**: update `log.md` and `decisions-log.md` at the end of every real
   session, starting with session one.
 - Tools deliberately evaluated and not adopted for this project (Graphiti, Graphify, Munder Difflin) are

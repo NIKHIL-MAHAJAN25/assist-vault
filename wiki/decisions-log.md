@@ -341,18 +341,23 @@ and a decision are not the same thing and only the second one governs going forw
 2. **Per-repo `CLAUDE.md` (A2): approved as recommended**, worker-authored, mechanics only. See
    `../CLAUDE.md`.
 
-3. **The spec-file carve-out (A5): the user overrode both sessions' recommendation.** Both sessions
-   independently argued for keeping the "master writes zero application-repo files, no exceptions" rule
-   absolute, for real reasons (a shared token file is only authoritative for the one repo that can import
-   it; transcription cost turned out to be small and checkable in practice). The user heard that argument
-   and explicitly chose the other direction anyway: **"architect builds the plan, laborer lays the
-   bricks"** — the master may author plans, specs, and literal-value data artifacts for token-saving
-   reasons, but never anything on the actual build/render path. This is now the standing rule in
-   `../CLAUDE.md`, not the absolute version either session recommended. Worth being honest about why this
-   is being recorded so explicitly: this is the exact rule that broke once already under a master's own
-   confident-but-wrong judgment call about what counts as "architecture" — the fix isn't a smarter rule,
-   it's requiring the master to ask when genuinely unsure rather than assume its own read is obviously
-   right.
+3. **The spec-file carve-out (A5): the user overrode both sessions' recommendation, then corrected the
+   first version of the override.** Both sessions independently argued for keeping the "master writes zero
+   application-repo files, no exceptions" rule absolute, for real reasons (a shared token file is only
+   authoritative for the one repo that can import it; transcription cost turned out to be small and
+   checkable in practice). The user heard that argument and explicitly chose the other direction anyway:
+   **"architect builds the plan, laborer lays the bricks."** The first pass at recording this framed the
+   justification as token-saving — the user corrected that immediately: the test is **accuracy under
+   genuine complexity, never token-saving.** The master may do a piece of implementation work itself only
+   when the task is genuinely complex (not merely larger — the kind a worker plausibly gets wrong) *and*
+   the master isn't confident a worker executes it correctly; in that case accuracy justifies the extra
+   cost. It is not a blanket allowance for spec-shaped work, and it is never invoked because delegating
+   would just be more expensive — most tasks, spec work included, stay routine enough to delegate, which
+   stays the default. This is now the standing rule in `../CLAUDE.md`, not the absolute version either
+   session recommended. Worth being honest about why this is recorded so explicitly, twice: this is the
+   exact rule that broke once already under a master's own confident-but-wrong judgment call about what
+   counts as "architecture" — the fix isn't a smarter rule, it's requiring the master to ask when genuinely
+   unsure rather than assume its own read is obviously right.
 
 4. **Remaining companion-app screens (dispatch question): held, not by choice — the user hit a usage
    limit mid-session.** Not a decision against dispatching; resume when the session picks back up.
