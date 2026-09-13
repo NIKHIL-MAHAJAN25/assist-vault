@@ -182,19 +182,36 @@ after repeated sessions of eyeballing worker output and taking self-reports at f
    against a real reference file needed zero reconciliation) while the debate over whether the master
    should write the canonical layer itself turned out to matter far less than assumed.
 10. **Dispatch hygiene — the mistakes that cost real damage tonight, none of which are about who writes
-   code.** (a) `--allowedTools` must name the tool the worker actually drives on this machine — a rule
-   written as `Bash(npm run build)` silently gates every worker that drives `PowerShell` instead, and the
-   failure is invisible until reports come back; grant both with prefix patterns
-   (`Bash(npm:*) PowerShell(npm:*) PowerShell(./gradlew.bat:*)`), and verify with a one-line throwaway
-   worker (`-p "run node --version and report it"`) before a real batch, not after losing one. (b) Every
-   worker prompt includes, verbatim: *"You are a non-interactive `claude -p` process. No human is reading
-   your output and no one will answer a question you ask. If something blocks you, do everything that is
-   not blocked, then state the blockage explicitly in your final report and stop. Never end your turn with
-   a question."* Without it, a blocked worker ends its turn asking a question into a void and exits 0 —
-   indistinguishable from success unless someone reads the transcript. (c) When a worker pays context to
-   discover an environment fact (a `JAVA_HOME` override, a shell-quoting trap, a stale-cache fix), that
-   fact goes into the next prompt and into the repo's own `CLAUDE.md` the same session — or the next
-   worker pays to rediscover it.
+   code, and none of which are a Windows/OS permission problem.** The block every stuck worker hit tonight
+   was Claude Code's own tool-approval layer, not the operating system — an elevated shell would have hit
+   the exact same wall, since the gate sits above the OS entirely. Granting a worker administrator rights
+   fixes nothing here and adds real, unnecessary system-modification risk; don't reach for it.
+   (a) **Permissions belong in the repo's own `.claude/settings.json`, inherited automatically — not
+   hand-typed fresh into every dispatch command.** A hand-written allowlist per dispatch is a fresh chance
+   to forget a command, misname a tool, or use the wrong pattern form every single time; written once per
+   repo, it can't drift dispatch-to-dispatch. (b) Name **every** tool the worker might actually drive on
+   this machine — a rule written as `Bash(npm run build)` silently never matches a worker driving
+   `PowerShell` instead, and the failure is invisible until reports come back: the worker writes correct
+   code, never verifies it, and exits 0 — indistinguishable from success from the outside. (c) **Prefix
+   patterns only** — `Bash(npm run build)` does not match `npm run build 2>&1 | tail -5`; use `npm:*`. (d)
+   The boundary that actually matters is **irreversibility and scope, not which binary is nominally
+   allowed** — be honest that allowing `node:*`/`python:*`/etc. is already arbitrary code execution, so a
+   command allowlist is mostly theatre; what actually contains a worker is the directory it's confined to
+   and whether its mistakes can be undone. Allow the build toolchain freely (npm/npx/node/gradlew/cargo/go/
+   python/pytest/make) plus read-only git; withhold `git push`, `git commit`, deploys, `rm -rf`, and
+   credential access. (e) **A worker that cannot run its own verification is worse than one never
+   dispatched** — it emits unverified code wearing the costume of verified code. The permission set must
+   cover the actual done-check; if you can't grant permission for the check, that's a signal not to
+   dispatch the task, not a reason to dispatch it anyway and hope. (f) **Probe first**: one throwaway
+   worker, `-p "run node --version and report exactly what it printed, or the exact error"`, before any
+   real batch — seconds, and it would have caught every one of the above before losing a whole batch to it.
+   (g) When a worker pays context to discover an environment fact (a `JAVA_HOME` override, a shell-quoting
+   trap, a stale-cache fix), that fact goes into the next prompt **and** into the repo's own `CLAUDE.md`
+   the same session — or the next worker pays to rediscover it. (h) **Seed realistic demo data before
+   building screens against it, not after.** A dashboard's episode-grouping logic looked correct against
+   empty data and degenerated into one-entry episodes against real data, because the seed's 20-minute
+   camera cadence exactly tripped the grouping threshold — no amount of code review would have caught this
+   against empty state; it only exists once realistic data volume and shape are actually present.
 
 ### Worker processes run at high thinking effort, independent of model tier
 Each worker is spawned as its own `claude -p` process from the master's shell, so its thinking effort can
