@@ -189,7 +189,17 @@ after repeated sessions of eyeballing worker output and taking self-reports at f
    (a) **Permissions belong in the repo's own `.claude/settings.json`, inherited automatically — not
    hand-typed fresh into every dispatch command.** A hand-written allowlist per dispatch is a fresh chance
    to forget a command, misname a tool, or use the wrong pattern form every single time; written once per
-   repo, it can't drift dispatch-to-dispatch. (b) Name **every** tool the worker might actually drive on
+   repo, it can't drift dispatch-to-dispatch. **This alone is not enough — repo-level `permissions.allow`
+   entries are silently ignored until Claude Code's workspace-trust flag is set for that repo.** A probe
+   worker in an untrusted repo gets back "Ignoring N permissions.allow entries from .claude/settings.json:
+   this workspace has not been trusted" and is refused — the exact same silent-gate failure this whole
+   practice exists to prevent, just relocated one layer down. Set `hasTrustDialogAccepted: true` for the
+   repo in `~/.claude.json` (with the user's confirmation that the folder is genuinely theirs — this is a
+   real trust decision, not a formality) before assuming a repo's settings file is load-bearing; verify
+   with the same probe-first step in (f), not by reading the settings file and assuming it's honored.
+   Separately: **`Write(path)` deny rules are silently non-functional — only `Edit(path)` rules are
+   actually matched.** Anyone writing a deny list should use `Edit()` only; `Write()` entries are dead
+   config. (b) Name **every** tool the worker might actually drive on
    this machine — a rule written as `Bash(npm run build)` silently never matches a worker driving
    `PowerShell` instead, and the failure is invisible until reports come back: the worker writes correct
    code, never verifies it, and exits 0 — indistinguishable from success from the outside. (c) **Prefix
@@ -211,7 +221,20 @@ after repeated sessions of eyeballing worker output and taking self-reports at f
    building screens against it, not after.** A dashboard's episode-grouping logic looked correct against
    empty data and degenerated into one-entry episodes against real data, because the seed's 20-minute
    camera cadence exactly tripped the grouping threshold — no amount of code review would have caught this
-   against empty state; it only exists once realistic data volume and shape are actually present.
+   against empty state; it only exists once realistic data volume and shape are actually present. (i)
+   **When two sessions disagree about basic filesystem state, verify with a git-based check before
+   escalating to "the environment is divided."** Two sessions disagreed for several minutes tonight about
+   whether three `.claude/settings.json` files existed — one saw them continuously from creation, the
+   other didn't across two direct file checks minutes apart. The files existed; **the cause was never
+   identified** and shouldn't be asserted as "timing" or "caching" — that's a plausible label, not a
+   finding, and writing it down as a diagnosis would teach a future session to shrug off a genuinely
+   divided view the same way. What actually resolved it: committing the files to git and checking the
+   exact commit SHAs from both sides — content-addressed and path-syntax-independent, which removes the
+   ambiguity a plain file check can't. Do that first next time, before concluding anything about the
+   environment. Also worth naming plainly since it happened on both sides of the same disagreement: one
+   session stated a firm "this isn't timing" and the other stated a specific cause with more confidence
+   than either had actually verified — the same shape of overclaiming that produced the retracted false
+   defect earlier in this same practice.
 
 ### Worker processes run at high thinking effort, independent of model tier
 Each worker is spawned as its own `claude -p` process from the master's shell, so its thinking effort can
