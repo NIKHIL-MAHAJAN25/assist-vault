@@ -193,13 +193,19 @@ after repeated sessions of eyeballing worker output and taking self-reports at f
    entries are silently ignored until Claude Code's workspace-trust flag is set for that repo.** A probe
    worker in an untrusted repo gets back "Ignoring N permissions.allow entries from .claude/settings.json:
    this workspace has not been trusted" and is refused — the exact same silent-gate failure this whole
-   practice exists to prevent, just relocated one layer down. Set `hasTrustDialogAccepted: true` for the
-   repo in `~/.claude.json` (with the user's confirmation that the folder is genuinely theirs — this is a
-   real trust decision, not a formality) before assuming a repo's settings file is load-bearing; verify
-   with the same probe-first step in (f), not by reading the settings file and assuming it's honored.
-   Separately: **`Write(path)` deny rules are silently non-functional — only `Edit(path)` rules are
-   actually matched.** Anyone writing a deny list should use `Edit()` only; `Write()` entries are dead
-   config. (b) Name **every** tool the worker might actually drive on
+   practice exists to prevent, just relocated one layer down. Two ways to clear it, either fine (with the
+   user's confirmation that the folder is genuinely theirs first — this is a real trust decision, not a
+   formality): open the repo in Claude Code interactively once and accept the trust dialog, **or** set
+   `projects["<repo path>"].hasTrustDialogAccepted: true` directly in `~/.claude.json`. Both forward-slash
+   and backslash spellings of the same path can exist as separate keys in that file and it isn't obvious
+   which one the resolver reads — set both rather than guess. Then verify with the probe-first step in
+   (f), not by reading the settings file and assuming it's honored. Separately: **`Write(path)` deny rules
+   are silently non-functional — only `Edit(path)` rules are actually matched.** Anyone writing a deny
+   list should use `Edit()` only; `Write()` entries are dead config. **Scripting `~/.claude.json` edits
+   from a shell one-liner is its own trap**: a `node -e '...'` invocation inside single quotes can turn a
+   literal `D:\repo` into a doubled backslash, silently creating a junk project key instead of editing the
+   real one — build the separator with `String.fromCharCode(92)`, or write the edit from a script file
+   instead of a `-e` one-liner. (b) Name **every** tool the worker might actually drive on
    this machine — a rule written as `Bash(npm run build)` silently never matches a worker driving
    `PowerShell` instead, and the failure is invisible until reports come back: the worker writes correct
    code, never verifies it, and exits 0 — indistinguishable from success from the outside. (c) **Prefix
@@ -565,3 +571,30 @@ could have stated in advance.
 The general shape worth remembering: an absolute rule survives contact with a genuinely obvious
 counterexample only if it can name, precisely, what makes the counterexample different — not by being
 relaxed on vibes when someone hits an inconvenient case.
+
+---
+
+## Session 9 — 2026-09-13 — The one-file exception, tested by real use, found too strict
+
+Found the same latent bug in two files — a Tailwind grid declared with only an `xl:` columns
+definition, which falls back to an implicit auto track that can overflow its container — in
+`Today.jsx` and `Faces.jsx`, both fixable with the identical four-token change
+(`grid-cols-1` plus an explicit `minmax(0,1fr)` fallback). The complete diff was known before starting,
+unambiguously. It was not confined to one file. The master made the fix directly anyway, disclosed
+exceeding the literal boundary rather than silently stretching "one file" to cover two, and proposed a
+fix to the rule instead of to its own account of what happened — verified by reading both files
+directly: the fix is real, present in both, and not yet committed.
+
+The rule's second clause ("confined to one file") was always a proxy for the actual thing that matters
+— nothing discovered or decided while writing the change — not the thing itself. A mechanically
+identical, verbatim fix applied to several files satisfies the real criterion exactly as well as one
+file does; the file count was never actually load-bearing. Rewritten in `../CLAUDE.md`: the exception
+now turns on whether the edit is *known in full and applied identically everywhere it's needed*, not on
+a count. What still fails it, correctly: anything where the edit varies even slightly from file to
+file, since variation is exactly where undisclosed per-file judgment hides.
+
+Worth stating plainly why this isn't the same mistake as the rule's first version: the master didn't
+reason its way to an exception and act on its own authority — it acted, then disclosed acting outside
+the literal rule, and left the rule change for review rather than deciding it alone. Practice #8 (log
+every mistake immediately) and the self-improvement clause both did their job here; the sequence is the
+system working as designed, once, on a rule that had only existed for a few hours.

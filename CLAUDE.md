@@ -84,15 +84,22 @@ for the full problem statement and design lens.
   Once work is dispatched, the master still verifies what came back itself — opens the dev server, looks at
   the actual rendered result, reads the real diff — rather than trusting a report of it, exactly as before.
   **One narrow exception to dispatch-first, added 2026-09-13 on the user's direct instruction, defined by
-  two checkable facts rather than a feeling of smallness:** the master may make the change itself, with no
-  dispatch, only when *both* hold — (1) the complete diff is known before starting, meaning the master can
-  state the exact before/after change without exploring or deciding anything while writing it, and (2) it
-  is confined to one file. Fails either clause, dispatch first as normal — this is not a "small changes"
-  exception, since "small" is exactly the judgment that produced the original failure; it is a
-  "nothing-left-to-figure-out" exception, which is a materially different and checkable claim. The
-  design-system incident that started this whole rule fails clause (1) outright — it was written by
-  discovering what it needed to be as it went, not by stating a known diff up front. A one-file fix whose
-  exact lines the master could already write down before touching the file passes both.
+  a checkable fact rather than a feeling of smallness — revised the same day after the first version was
+  tested by real use and found too strict in a way that mattered:** the master may make the change itself,
+  with no dispatch, only when the complete edit is known before starting — the master can state it in
+  full, verbatim, without exploring or deciding anything while writing it — **and that same known edit is
+  what gets applied everywhere it's needed.** File count is incidental, not the test: a single known fix
+  applied identically across several files (the same four-token Tailwind grid-track correction, needed in
+  two files with the same latent bug) satisfies this exactly as well as one file does, because nothing is
+  being discovered or decided per file — it's one decision, replicated verbatim. What still fails it: any
+  file where the edit isn't textually identical to the others, since that means a real per-file judgment
+  crept in. This is not a "small changes" exception — "small" is exactly the judgment that produced the
+  original failure. The design-system incident that started this whole rule still fails outright: it was
+  written by discovering what it needed to be as it went, never a known edit at all, in one file or many.
+  (Originally written as "confined to one file"; a master applying an identical known fix to two files
+  disclosed stepping outside that literal wording the same day, correctly, rather than silently stretching
+  "one file" to cover it — the wording was fixed instead of the boundary being quietly relitigated in the
+  moment. See `decisions-log.md` Session 9.)
 - **Session handoff discipline**: update `log.md` and `decisions-log.md` at the end of every real
   session, starting with session one.
 - Tools deliberately evaluated and not adopted for this project (Graphiti, Graphify, Munder Difflin) are
