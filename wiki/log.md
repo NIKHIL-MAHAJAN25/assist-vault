@@ -356,3 +356,18 @@ project already has a locked `api-contract.md` and three consumer repos.
 12. Patient creation / caregiver invite flow (no API creates patients or users).
 13. NFC sticker (physical, no code).
 14. Companion app visual design (awaiting user inspiration).
+
+## Session 11 — 2026-10-03: Linen design + dual-mode app
+
+- Dashboard: "Linen" palette (warm tinted neutrals, earthy status colours), painted time-of-day
+  backdrop with frosted-glass cards, floating light header, day-picker pill, "later today"
+  sky placeholders, alert said once (incidents inside the Today hero), fully responsive
+  (bottom dock nav below 1024px).
+- Companion app rebuilt as two sides behind a welcome screen ("Who's using this phone?"):
+  - Patient side: same Linen language, painted sky (dark dusk at night), big clock + orientation
+    sentence, one due item, "Ask me anything", three tiles.
+  - Family side: caregiver sign-in (same account as the web), and every dashboard feature —
+    Today, Log, Places (osmdroid editor), People (face-api.js in a WebView, fingerprints match
+    the website's), Memory, Settings & devices. `family/Story.kt` ports `story.js`.
+- Pending list unchanged except item 14 (app visual design) is done; the app is installed on
+  the S24+ (currently left in family mode after testing — switch via the welcome screen).
