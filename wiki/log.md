@@ -371,3 +371,22 @@ project already has a locked `api-contract.md` and three consumer repos.
     the website's), Memory, Settings & devices. `family/Story.kt` ports `story.js`.
 - Pending list unchanged except item 14 (app visual design) is done; the app is installed on
   the S24+ (currently left in family mode after testing — switch via the welcome screen).
+
+**Session 11 addendum (later the same day)**
+- Family side of the app was rethought as a phone app, not a website port: hub-and-spoke instead of five tabs.
+  `FamilyHome` answers "is she okay?" at a glance (status card + one action, camera line, one-sentence day,
+  four doors: Places / People / Memory / Devices); Alerts, Day, Places, People, Memory, Settings are one tap
+  deeper; moment details open in a bottom sheet. Family side uses a smaller type scale (`FamilyTypography`)
+  and slimmer buttons (`LocalCompact`); the patient side keeps large type on purpose.
+- Fixed an ANR: osmdroid `zoomToBoundingBox` loops forever on a map with no size yet (see `companion-app/CLAUDE.md`).
+- Installed on the S24+ (family mode; Margaret's patient registration is kept).
+- Research (no code): V-JEPA 2 judged a poor fit (clip-based, no text output, no data yet; only revisit for
+  routine learning once the ESP32 sends bursts). Jev (TypeSafe, text-only closed classifier, launched
+  2026-09-15) judged a good fit for pending items 1/5-ish: alert probability, activity category at ingest,
+  quiz-answer judging, recall intent routing. Open: API key + privacy sign-off before sending activity text.
+- Gemini cost/limits: one `GEMINI_MODEL` env var drives all four calls (default `gemini-2.5-flash`). Frame call
+  does not set a thinking budget (thinking tokens bill as output). With a photo every 5-10 s the free tier is
+  the risk (per-minute and per-day caps), not price. Proposed, not built: thinking budget 0 on frames,
+  server-side throttle (<= 1 analysis / 10 s), save-without-description on 429.
+- Still open: nothing is pushed to GitHub (no remotes); ESP32 not reaching the server; Home zone is ~15 km from
+  the phone; add-a-person, place editing and "I've checked" not yet exercised on the phone.

@@ -624,3 +624,21 @@ system working as designed, once, on a rule that had only existed for a few hour
 - **Demo data re-seeded** (`node prisma/seed.js`) so "today" is current. Verified first that every row
   was seed data. New demo patient id: see `log.md`.
 - **Servers now run detached** (`Start-Process`) — background jobs in this tool die after 10 min.
+
+## Session 11 — 2026-10-03 — Linen design, dual-mode app, mobile-first family side
+
+- **One palette across web and app ("Linen").** Warm tinted neutrals, earthy status colours, painted
+  time-of-day backdrop, frosted-glass cards. *Why:* white cards on cold grey read as unfinished; the
+  user rejected two earlier app looks and accepted this one on the dashboard. Night is the one dark palette.
+- **The app is two products behind a welcome screen** (`SecurePrefs.appMode` = patient | family). Family
+  signs in with the same JWT account as the website; `AuthInterceptor` sends the JWT in family mode and the
+  device api_key otherwise. No API contract change: the family side only uses existing routes.
+- **Family side is not a port of the website.** A first pass copied every dashboard page into five tabs and
+  was rejected as cluttered. Rebuilt as a hub: one glanceable Home, everything else a tap deeper, details in
+  sheets, smaller type. *Why:* caregivers use a phone for seconds at a time; the website is for sitting down.
+- **Face fingerprints on the phone use the website's own face-api.js (hidden WebView).** *Why:* a person added
+  from the app and from the website must be directly comparable; photos never leave the device.
+- **Alerts are said once** (incidents live inside the Today hero / Alerts screen). *Why:* the same
+  "outside the safe zones" appeared four times in red and nothing led.
+- **Not adopted (yet):** V-JEPA 2 (wrong input shape, no data); Jev pending a key and a privacy decision
+  because activity text describes a person with dementia and Jev is closed, hosted, text-only.
