@@ -323,3 +323,36 @@ one-shot and disposable).
 Recommended starting point, not yet confirmed by the user: Tier 1 items #1 and #2 together, since
 #2 depends on #1's data and is the single most concretely useful thing on the list given this
 project already has a locked `api-contract.md` and three consumer repos.
+
+
+---
+
+## Session 10 — 2026-10-02
+
+**Done**
+- `family-dashboard`: full redesign (see `decisions-log.md` Session 10) + new login. Verified by
+  screenshotting every page against live data; demo login lands on Today with no console errors.
+  Dashboard API host now follows the page's host, so `http://<pc-ip>:5173` works from a phone.
+- `companion-app`: UI rebuilt twice; look still rejected (pending user inspiration). New: Get home
+  screen, voice quiz, tappable Ask suggestions, auto re-setup on revoked device key. Installed and
+  registered on the user's Galaxy S24+.
+- `backend-server`: `GET /api/devices/me`.
+- DB re-seeded. Demo patient id: `863e9223-56d5-4a3d-b9dd-4cc98937b73c`.
+- PC LAN IP is currently `192.168.1.13` (it changes between networks — check `ipconfig`).
+
+**Pending features (spec vs. what's built)**
+1. Phase 1 two-step agentic decision layer (`agent_decision` is only faked in seed data).
+2. Short-term memory context (last N entries fed into prompts).
+3. Notifications: FCM / Resend email / Twilio SMS — none built.
+4. Face recognition on camera frames + "this is your son" announcement (only enrolment exists).
+5. Routine learning / deviation flagging.
+6. Medication confirmation via camera (phone reminders are local-only).
+7. Family voice notes (record on dashboard, play on phone).
+8. "Lost?" home-screen widget (the in-app Get home screen now exists; the widget doesn't).
+9. Wear OS watch app.
+10. Scheduled jobs: weekly photo cleanup (UI already promises 7-day expiry — make it true) and daily
+    quiz generation.
+11. "Next: lunch at 1pm" orientation line (no schedule data model).
+12. Patient creation / caregiver invite flow (no API creates patients or users).
+13. NFC sticker (physical, no code).
+14. Companion app visual design (awaiting user inspiration).

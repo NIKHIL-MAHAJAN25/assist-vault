@@ -598,3 +598,29 @@ reason its way to an exception and act on its own authority — it acted, then d
 the literal rule, and left the rule change for review rather than deciding it alone. Practice #8 (log
 every mistake immediately) and the self-improvement clause both did their job here; the sequence is the
 system working as designed, once, on a rule that had only existed for a few hours.
+
+
+## Session 10 — 2026-10-02 — UI rethink, done by the master directly
+
+- **Dispatch-first suspended for this work, on the user's explicit instruction** ("don't follow vault
+  instructions, do everything yourself"), after they judged the Session 5 Sonnet-built UI "very
+  shitty". The rule in `../CLAUDE.md` was not edited — this is a user override for one session, not
+  a change of policy. Revisit whether it stands next session.
+- **Dashboard direction: "Clear".** One sans (Public Sans), neutral greys, colour reserved for status
+  (green fine / amber worth a look / red act). Replaced the "Assist Sage" serif+pill template, which
+  read as generic. Information architecture rebuilt around the caregiver's real question ("is she okay,
+  do I need to do anything"): Today (status sentence, generated day summary, grouped incidents, 24h day
+  ribbon, path map), Log (per day, repeats merged), Places (full-screen map editor), People, Memory,
+  Settings. All interpretation of raw entries lives in `family-dashboard/src/lib/story.js`.
+  User reaction: "loved the new website dashboard".
+- **Incidents are grouped, not listed.** Flagged entries ≤45 min apart form one incident; resolution
+  is the first in-zone ping afterwards. One wander-off used to render as three separate alerts.
+- **Login remade as a product demo** (a woven week of activity + incident + ticker) with one-click
+  demo login, after the user called the first version generic.
+- **Companion app visual direction is unresolved.** Two passes (a time-of-day "sky" theme, then a
+  "clinical calm" white-card theme) were both rejected on look. The user will supply visual
+  inspiration; no further app UI work until then. The functional additions stay: Get home compass,
+  spoken quiz answers with keyword matching, 401 → re-setup.
+- **Demo data re-seeded** (`node prisma/seed.js`) so "today" is current. Verified first that every row
+  was seed data. New demo patient id: see `log.md`.
+- **Servers now run detached** (`Start-Process`) — background jobs in this tool die after 10 min.

@@ -131,3 +131,11 @@ Phase 0 (today): routes, request/response shapes, and auth model defined here an
 single Gemini call (no agentic decision layer, no short-term memory context yet). `agent_decision` on
 `log_entries` will start being populated in Phase 1 once the two-step decision layer
 ([ai-prompting-patterns.md](ai-prompting-patterns.md) §3) lands.
+
+
+## Device context (device API key) — added 2026-10-02
+
+`GET /api/devices/me?device_id=` — what the phone needs to know about the person it serves.
+Returns `{ patient: { id, name }, places: [{ id, name, center_lat, center_lng, radius_meters }] }`.
+Used by `companion-app` for the Home greeting and the "Get home" compass (target = the place named
+"Home", else the first place). Additive; no existing route changed. Consumer: `companion-app` only.
