@@ -139,3 +139,28 @@ single Gemini call (no agentic decision layer, no short-term memory context yet)
 Returns `{ patient: { id, name }, places: [{ id, name, center_lat, center_lng, radius_meters }] }`.
 Used by `companion-app` for the Home greeting and the "Get home" compass (target = the place named
 "Home", else the first place). Additive; no existing route changed. Consumer: `companion-app` only.
+
+---
+
+## Emergency (NFC) tag — added Session 11
+
+A sticker holds `<PUBLIC_BASE_URL>/t/<code>`. The backend serves that page itself (`public/tag.html`),
+so one exposed port is enough. `code` is 7 chars from `[a-z2-9]` minus look-alikes.
+
+**Caregiver (JWT, family_caregiver, own patient only)**
+- `GET /api/patients/:id/tag` → `{ code, url, note, home_label, show_home, has_home_zone, contacts: [{name, relation, phone}] }`
+  (creates the code on first call)
+- `PUT /api/patients/:id/tag` body any of `{ note, home_label, show_home, contacts }` (contacts ≤ 5, each needs name + phone; replaces the list) → same shape
+- `POST /api/patients/:id/tag/rotate` → new code; the old sticker stops working
+
+**Public (no auth — whoever taps the sticker)**
+- `GET /api/public/tag/:code` → `{ first_name, note, contacts, home: {label, lat, lng} | null }`.
+  Only the first name, never surname or DOB. Also logs a `sighting` entry `{kind:'scan'}`, `requires_attention: true`,
+  at most once per 10 minutes per tag.
+- `POST /api/public/tag/:code/sighting` body `{ lat?, lng?, accuracy?, message? }` → 201. Logs `sighting`
+  `{kind:'location', lat, lng, accuracy}`, `requires_attention: true`. Throttled per IP (20 s).
+- Unknown/rotated code → 404 `{ error: 'This tag is no longer active.' }`
+
+**Schema:** `patients` gains `tag_code` (unique), `tag_note`, `home_label`, `tag_show_home`; new table
+`emergency_contacts`; `LogEntryType` gains `sighting`. Consumers: dashboard + app `story` logic treat a
+sighting as a place moment and title its incident "Someone found them and tapped the emergency tag".
