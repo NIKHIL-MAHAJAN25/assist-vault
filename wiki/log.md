@@ -390,3 +390,34 @@ project already has a locked `api-contract.md` and three consumer repos.
   server-side throttle (<= 1 analysis / 10 s), save-without-description on 429.
 - Still open: nothing is pushed to GitHub (no remotes); ESP32 not reaching the server; Home zone is ~15 km from
   the phone; add-a-person, place editing and "I've checked" not yet exercised on the phone.
+
+## Pending features — re-categorised 2026-10-17 (NFC parked)
+
+**Alerts & safety**
+- Notifications to family (FCM push / Resend email / Twilio SMS) — none built.
+- Agentic decision layer ("does the family need to know?") — rules only; Jev candidate (needs key + privacy OK).
+- Medication confirmation via camera.
+- "Lost?" home-screen widget on the patient phone.
+- PARKED: emergency NFC tag — software done (Session 11); hardware (NTAG216 stickers), contacts, public URL and writing the tag deferred.
+
+**AI & understanding**
+- Short-term memory context (last N entries into prompts).
+- Face recognition on camera frames + "this is your son".
+- Routine learning / deviation flagging (V-JEPA 2 only worth revisiting once the camera sends clips).
+- Gemini cost/limits for live demo: Flash-Lite or paid key, thinking budget 0 on frames, 1 analysis / 10 s throttle, retry on 429.
+
+**Patient experience**
+- Family voice notes (record on dashboard, play on phone).
+- "Next: lunch at 1pm" orientation line (needs a schedule data model).
+- Wear OS watch app.
+
+**Accounts & platform**
+- Patient creation / caregiver invite flow (all accounts are seeded today).
+- Scheduled jobs: 7-day photo cleanup (UI already promises it) + daily quiz generation → Vercel Cron.
+- Deploy backend to Vercel: hosted Postgres + Prisma pooling, bundle public/tag.html, PUBLIC_BASE_URL.
+- Push the four repos to GitHub.
+
+**Hardware & setup (user)**
+- Reconnect ESP32 camera to WiFi; set its /capture URL in the app.
+- Move the Home zone to the real location.
+- Install latest app build; exercise add-person, place editing, "I've checked" on the phone.
