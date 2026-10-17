@@ -662,3 +662,30 @@ system working as designed, once, on a rule that had only existed for a few hour
 - **Constraint:** provider must be invisible to users → strict shared JSON schema and a **fixed activity
   vocabulary** (free-text activity would stop consecutive frames merging into one moment).
 - **Revisit** before any non-demo use: switch to paid API keys (subscriptions are for personal use).
+
+
+## Session 13 — 2026-10-17 — Accounts, Drex shadow mode, "Lost?" widget
+
+- **Self-serve accounts with codes, no email.** Sign-up creates the patient and its first caregiver; other
+  family join with a 6-char single-use code (72 h); the patient's phone pairs with its own code (24 h).
+  *Why:* every account was seeded, and the patient phone needed a 36-char UUID typed in. Codes can be read
+  over a phone call; no email provider is configured. Look-alike characters removed for the same reason.
+- **`POST /devices/register` now needs a caregiver JWT.** *Why:* it was public with just a patient id, so
+  anyone holding an id could add a device and post into that patient's log. Pairing replaces it for the
+  patient phone. Breaking change, flagged in api-contract.md; the app was updated in the same session.
+- **Drex decision layer built, default `shadow`.** Rules still decide; Drex's answer is stored beside them
+  (`payload.decision`) and summarised on dashboard Settings ("Alert decisions": agreement %, latency).
+  Context sent: event line + up to 6 earlier entries from the last 6 h, first name only. In shadow mode
+  the call runs after the HTTP response, so the camera never waits on Drex. `DECISION_MODE=off|shadow|live`.
+- **In `live`, Drex can raise any alert but cannot silence a geofence alert**, and can silence a camera
+  alert only at p(notify) < 0.2. *Why:* a model being wrong in the quiet direction is the costly failure;
+  leaving the safe places is the one alert that must never depend on a model.
+- **Drex response parsing is tolerant** (probability / p / yes / bare number; choice or argmax of
+  probabilities). *Why:* the hosted API's exact response JSON isn't documented publicly and a live test
+  call from this session was blocked by the tool's permission layer; `node scripts/drex-check.js` prints
+  the raw answer so the parser can be confirmed.
+- **The user pasted the Drex key in chat** (said: free credits). It is in `backend-server/.env` (gitignored).
+  Rotate it before anything public, since it now sits in the chat transcript.
+- **"Lost?" widget is a plain RemoteViews AppWidget**, not Glance. *Why:* one static tap target needs no
+  new dependency; whole card opens MainActivity with `open=get-home` (clear task), NavHost jumps to Get home
+  when the phone is set up as the patient's.

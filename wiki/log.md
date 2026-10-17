@@ -461,3 +461,30 @@ mode first) → photo cleanup/daily quiz cron → deploy.
 
 **Privacy notes given to user**: chat + read files go to Anthropic (training per their claude.ai privacy setting);
 vault has AGENTS.md/.codex so Codex would send it to OpenAI if run there; photos/text go to Gemini + Cloudinary.
+
+
+## Session 13 — 2026-10-17: accounts + invites, Drex shadow mode, "Lost?" widget
+
+**Built & verified**
+- Backend: `Invite` table (migration `invites`), signup / join / invite preview / pair / caregivers /
+  invites CRUD, `services/decisionService.js` (rules + Drex), `GET /patients/:id/decisions`,
+  `scripts/drex-check.js`. All routes exercised with curl (incl. duplicate email, short password, reused
+  code, other patient → 403, unauthenticated register → 401). Decision layer tested with a stubbed Drex:
+  shadow records disagreement, a 503 falls back to rules, live never silences a geofence alert.
+- Dashboard: `/signup`, `/join`, `/join/:code` (code preview: "X invited you to help look after Y"),
+  Settings → welcome checklist (`?welcome=1`), Family circle, "Set up <name>'s phone" (pairing code),
+  Alert decisions panel. Checked in the browser.
+- App: patient onboarding takes a 6-box code (no autocorrect); family sign-in has Create account / Join;
+  family Settings has Family circle (copy / share / cancel) and a pairing code. "Lost?" widget
+  (lime card → Get home). Whole flow run on the `assist_demo` emulator: pair → home, widget placed and
+  tapped → Get home, join → family Today, Settings codes. Installed on the user's phone (no taps — they
+  were using it).
+- Test patient and accounts deleted afterwards.
+
+**Needs the user**
+- Run `node scripts/drex-check.js` in `backend-server` once to confirm the key and Drex's reply format
+  (my own call was blocked). Then watch Settings → Alert decisions as real events come in.
+- Place the widget on the phone (long-press home → Widgets → Companion → "Feeling lost?").
+
+**Pending list changes:** Lost? widget ✔, patient creation / caregiver invite ✔, Drex decision layer ✔
+(shadow; switch to live after reviewing agreement). Rest unchanged — see "Pending features" above.

@@ -61,3 +61,11 @@ No separate "alerts" table — an alert is `log_entries` filtered by `requires_a
 - **Devices** (ESP32-CAM via companion app, companion app itself, watch app): authenticate via a
   **device API key** issued at `POST /api/devices/register`, hashed and stored in `devices.api_key_hash`.
   Devices are not "logging in" as a person — don't reuse the JWT scheme for them.
+
+
+## `invites` — added Session 13
+- `id` (PK), `code` (unique), `patient_id` (FK → `patients.id`, cascade), `kind` (`caregiver` | `device`),
+  `created_by` (FK → `users.id`), `created_at`, `expires_at`, `used_at` (nullable), `used_by` (nullable —
+  the new user id or device id; not an FK because it can point at either table).
+- `log_entries.payload.decision` (JSON inside payload, no column) holds the decision layer's record;
+  `log_entries.agent_decision` is now actually written (`log_only` | `alert_family` | `check_in`).
