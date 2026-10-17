@@ -642,3 +642,14 @@ system working as designed, once, on a rule that had only existed for a few hour
   "outside the safe zones" appeared four times in red and nothing led.
 - **Not adopted (yet):** V-JEPA 2 (wrong input shape, no data); Jev pending a key and a privacy decision
   because activity text describes a person with dementia and Jev is closed, hosted, text-only.
+
+## 2026-10-17 — Decision model: Drex (Nace.AI), not Jev
+
+- **Choice:** the "decision" layer (alert probability, activity category at ingest, quiz-answer judging,
+  recall intent routing) will use **Drex** by Nace.AI. *Why:* the user has free access to it; Drex speaks the
+  same System-One-style API as TypeSafe's Jev, and a ~5% quality gap is acceptable for this project.
+- **Shape when built:** one backend `decision` helper, model name in config, current rule-based logic kept as
+  the fallback when Drex is slow, down or unconfigured. Run in shadow mode (log both answers) before Drex is
+  allowed to raise or suppress an alert.
+- **Privacy:** activity text describing the patient goes to Nace (via OpenRouter). Accepted by the user in
+  choosing Drex; revisit before any real (non-demo) deployment.
