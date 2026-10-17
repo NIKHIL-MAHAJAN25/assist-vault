@@ -421,3 +421,43 @@ project already has a locked `api-contract.md` and three consumer repos.
 - Reconnect ESP32 camera to WiFi; set its /capture URL in the app.
 - Move the Home zone to the real location.
 - Install latest app build; exercise add-person, place editing, "I've checked" on the phone.
+
+## Session 12 — 2026-10-17: AI provider plan, NFC parked, hosting (for compaction)
+
+**Decisions taken (also see decisions-log.md 2026-10-17)**
+- Decision layer → **Drex** (Nace.AI), key obtained **directly from Nace** (not OpenRouter). Not built yet.
+- Emergency NFC tag: software built & committed (Session 11); hardware **parked**. Sticker to buy: **NTAG216
+  pack of 10 (~₹289)** (reusable for future projects; NTAG213 ₹160 also fine). Anti-metal variant if it reads
+  badly on the ESP32 case. Never "lock" the tag. Link must point at the final public host.
+
+**Image/text AI plan (agreed in principle, not built)**
+- Worker pool on the user's **AWS EC2 (Ubuntu)**: **8 workers — 4 Claude (subscription via `claude setup-token`,
+  Sonnet 5.5, low effort for frames, medium for quiz/recall/clarify) + 4 GPT (subscription via Codex CLI headless)**.
+  Shared queue, any free worker takes the next photo; drop stale photos; fresh `claude -p` / `codex exec` per call
+  (no long sessions). Instance ≥ 4 GB RAM.
+- **Identical output regardless of provider**: same prompt + few-shot examples; strict JSON = current frame schema
+  (`activity`, `person_state`, `objects_of_note`, `confidence`); validate + 1 retry, then other provider.
+  **`activity` from a fixed vocabulary** (eating, drinking, cooking, watching TV, reading, resting in chair,
+  sleeping, walking around, out of the house, with a visitor, taking medication, empty room, not visible, …) —
+  required, otherwise alternating models break moment merging in story.js/Story.kt. Category logic then becomes a
+  lookup. Record which provider answered (backend only).
+- Fallback chain: Claude workers → GPT workers → **Gemini paid** (~$10 prepaid, spend cap). Backend switch
+  `AI_PROVIDER`. Also: thinking budget 0 on Gemini frames, ≤1 analysis/10 s throttle, retry on 429.
+- Caveat noted to user: subscription use is OK for a personal prototype where the user is the only person/data
+  subject; move to paid API keys before any real users or sale.
+- App frame cadence today: capture every 5 s (`MonitoringService.FRAME_INTERVAL_MS`), upload only on change.
+
+**Hosting**
+- Leaning **EC2 for the backend** (Postgres on box, no body-size limit, in-memory throttle + cron work) over Vercel.
+  If Vercel: hosted Postgres + Prisma pooling, bundle `public/tag.html`, Vercel Cron, ~4.5 MB body cap.
+  Either way set `PUBLIC_BASE_URL`.
+
+**Needed from the user to start the AI work**: EC2 SSH details (host, user `ubuntu`, .pem path) or run a setup
+script; run `claude setup-token` and `codex login` on the box; Nace Drex key + Gemini paid key into
+`backend-server/.env` (never pasted in chat).
+
+**Recommended next build order**: notifications → AI worker pool + fixed vocabulary → Drex decision layer (shadow
+mode first) → photo cleanup/daily quiz cron → deploy.
+
+**Privacy notes given to user**: chat + read files go to Anthropic (training per their claude.ai privacy setting);
+vault has AGENTS.md/.codex so Codex would send it to OpenAI if run there; photos/text go to Gemini + Cloudinary.

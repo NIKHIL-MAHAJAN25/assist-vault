@@ -653,3 +653,12 @@ system working as designed, once, on a rule that had only existed for a few hour
   allowed to raise or suppress an alert.
 - **Privacy:** activity text describing the patient goes to Nace (via OpenRouter). Accepted by the user in
   choosing Drex; revisit before any real (non-demo) deployment.
+
+## 2026-10-17 — Frame analysis via subscription CLI workers (planned)
+
+- **Choice:** analyse frames with a pool of headless CLI workers on the user's EC2 (4 Claude Code + 4 Codex),
+  Gemini paid as last-resort fallback. *Why:* the user already pays for both subscriptions and is the only user
+  and data subject of this prototype; Gemini free-tier limits break a 5 s demo cadence.
+- **Constraint:** provider must be invisible to users → strict shared JSON schema and a **fixed activity
+  vocabulary** (free-text activity would stop consecutive frames merging into one moment).
+- **Revisit** before any non-demo use: switch to paid API keys (subscriptions are for personal use).
