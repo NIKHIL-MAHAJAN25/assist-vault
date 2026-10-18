@@ -391,7 +391,7 @@ project already has a locked `api-contract.md` and three consumer repos.
 - Still open: nothing is pushed to GitHub (no remotes); ESP32 not reaching the server; Home zone is ~15 km from
   the phone; add-a-person, place editing and "I've checked" not yet exercised on the phone.
 
-## Pending features — re-categorised 2026-10-17 (NFC parked)
+## Pending features — re-categorised 2026-10-17 (NFC parked) — superseded by "Feature status — 2026-10-18" at the end
 
 **Alerts & safety**
 - Notifications to family (FCM push / Resend email / Twilio SMS) — none built.
@@ -488,3 +488,91 @@ vault has AGENTS.md/.codex so Codex would send it to OpenAI if run there; photos
 
 **Pending list changes:** Lost? widget ✔, patient creation / caregiver invite ✔, Drex decision layer ✔
 (shadow; switch to live after reviewing agreement). Rest unchanged — see "Pending features" above.
+
+## Session 14 — 2026-10-18: backend on EC2, AI helper queue, day journal, summaries
+
+**Built & verified (live)**
+- Backend deployed on the user's EC2 box (3.107.133.23) as Docker compose project `assist` (`assist-db`
+  Postgres 17 + `assist-api`) behind the existing Caddy: https://assist.3-107-133-23.sslip.io.
+  `deploy/update.sh` = one-command update from the laptop (scp the `git archive` package + ssh).
+- **Helper queue:** `ai_jobs` table claimed with `FOR UPDATE SKIP LOCKED`; 8 helpers on the host (4 Claude
+  CLI + 4 Codex CLI, systemd `assist-helpers`, user `assist`); Gemini fallback; bad answer retried once on
+  the other provider; stale photos dropped; cool-off when a provider keeps failing.
+- `POST /api/frames` now answers 202 at once — uploads never wait on AI (the likely cause of the old HTTP 500).
+- Fixed activity vocabulary (19 `activity_key`s) + `validateFrame`; moments merge by key.
+- **Day journal** (Markdown per patient per day, written only by the backend) and **summaries**
+  (Today / This morning / This week) on the website and the app.
+- Prompt describes the person, not the camera; "no one in view" merges. Original photos shown (no AI
+  upscaling). Plain-language moment titles.
+- Sky colours for the part-of-day cards (morning / afternoon / evening / night) with a page per part, on the
+  website and the app.
+- Full reference: [ai-helpers.md](ai-helpers.md) Part A.
+
+## Session 15 — 2026-10-18: family Assistant tab + phone actions
+
+- **Assistant tab** on the website (after Home): a grounded AI chat (journal, location, camera, alerts,
+  rules, recent actions) that **proposes** actions; the family member confirms each one. Live
+  speech-to-text input, quick chips, animated orb, no scrollbars.
+- **Device commands** (`device_commands`): the phone polls every 6 s and acks. Actions: speak, ask (with
+  tap-to-answer reply shown back), voice note (recorded in the browser), ring, reminder, take a photo now,
+  guide home (arrow + 15 s location pings), memory quiz, calm-down. All appear in the journal.
+- Verified live on the user's phone (acting as Margaret's phone).
+
+## Session 16 — 2026-10-18: demo kit, notifications, family broadcasts
+
+- **Demo kit** (`DEMO_MODE=1`, website `/demo`): save/replay camera scenes through the real AI pipeline,
+  simulated walk away/home, answer as Margaret, reset. **21 scripted test cases** on the Demo page +
+  [demo-playbook.md](demo-playbook.md).
+- **Notification feed** (polled, no FCM): website bell + toasts + desktop alerts (act-level stay until
+  dismissed); family app foreground service. "Tell the family" broadcasts.
+- Verified live: walk → alert → answer → scene replay via Claude → walk home → reset.
+
+## Session 17 — 2026-10-18: the agent acts on its own (Batch C)
+
+- **Scheduler** every 30 s.
+- **"Tell me when…" rules:** arrives home, leaves home (after a time), not seen doing X by a time, still
+  doing X at a time, seen doing X, no sign for N minutes. Created from plain English via the Assistant.
+- **Fall check:** a fall on camera → her phone asks "are you okay?" → okay calms it; "I need help" or no
+  answer in 2 min → urgent family alert + her phone rings.
+- **Bedtime story:** a helper writes "Today you…" from the journal; sent at a set bedtime or on demand.
+- Verified live: `arrives_home` fired; fall check escalated with a ring; story written by Claude and delivered.
+
+## Session 17b — 2026-10-18: natural voice
+
+- Everything spoken on her phone uses **Gemini TTS** (voice Sulafat; 3.1 flash TTS → 2.5 fallback),
+  cached on the server's disk and served at `/tts/<hash>.wav`; urgent phrases pre-made at startup. Commands
+  wait up to 10 s for the audio (story 45 s); otherwise the phone uses its own (best natural) voice.
+- Committed: backend `1b686e0`, app `461ada3`. **Verified on the laptop only** — server update + app install
+  + phone test pending.
+- [ai-helpers.md](ai-helpers.md) updated with Part B (Sessions 15–17b, full detail).
+
+## Feature status — 2026-10-18 (replaces "Pending features" above)
+
+**Done and verified live**
+| Area | Features |
+|---|---|
+| Camera understanding | ESP32 → phone → helper queue (Claude/Codex, Gemini fallback); fixed vocabulary; moments; original photos; day journal; summaries |
+| Safety | Geofencing + alerts; "Lost?" widget + Get-home arrow; emergency tag page (software); guide home; fall check with escalation; "tell me when" rules; Drex decision layer (shadow mode) |
+| Family | Accounts, invites, phone pairing; Assistant tab (grounded, proposes actions); notification feed + broadcasts; sky-coloured day parts; alert decisions panel |
+| Patient phone | Speak, ask + reply, family voice notes, ring, reminders, take photo now, memory quiz, calm-down, bedtime story |
+| Demo | Demo kit, 21 test cases, playbook |
+
+**Built, not yet verified on the live server**
+- Natural voice (Gemini TTS).
+- Family-side notifications on the app (needs a second phone).
+
+**Still to build (shortlist)**
+- Batch D: #11 replay her walk (animated route), #20 "where did she leave her glasses?", #22 doctor's
+  report, #21 reminiscence (narrated family album).
+- Batch E (showpiece): the Assistant speaks its answers; evidence photo behind each claim; "how it decided"
+  (Claude described → Drex rated → rules agreed).
+
+**From the original scope, not started**
+- Wear OS watch app (scripted scenarios); face recognition ("this is your son"); routine learning;
+  "Next: lunch at 1 pm" schedule; 7-day photo clean-up; Drex shadow → live.
+
+**Needs the user**
+- Update the server to `1b686e0`, install app `461ada3`, test the voice; check the Gemini TTS quota.
+- Reconnect the ESP32 camera; stage and save the 5 remaining demo scenes.
+- Run `node scripts/drex-check.js`; rotate the Drex key; push the four repos to GitHub.
+- At the end: deploy the website onto the server; repo/code walkthrough.
