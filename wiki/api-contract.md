@@ -276,3 +276,28 @@ Simulated readings come from per-patient devices `demo:camera` / `demo:phone`; r
 - Agent actions gain `rule {kind, params, repeat}` and `story`.
 - Demo kit: `POST /api/demo/:id/tick` (run the scheduler now), `POST /api/demo/:id/fall` (simulated fall).
 - Schema: `watch_rules`, `family_events`, `patients.bedtime_story_at`.
+
+## Looking back (Batch D) — Session 18 (2026-10-19)
+
+All JWT family, own patient.
+- **Find an object** (#20): `GET /api/patients/:id/find?q=glasses` → `{object, terms[], sightings: [{log_entry_id, at,
+  matched, objects[], activity, image_public_id}]}` — newest first, one per 10 min, last 7 days, whole-word match on
+  `objects_of_note` + activity (always-plural words kept, small synonym list). The Assistant's context now lists
+  "Objects the camera noticed" (last 3 days); agent action `find {object}`.
+- **Doctor's report** (#22): `GET /api/patients/:id/report?days=7|14|28` → `{patient{name,dob}, days, from, to,
+  days_recorded, includes_simulated, totals{meals_per_day, days_without_meal_seen, medication_days,
+  daytime_rest_min_per_day, usual_first_up, usual_last_seen, left_safe_places, outside_min, falls, fall_escalated,
+  distressed, quiz_pct, quiz_pct_first_half, quiz_pct_second_half}, daily[{date, recorded, first_up, last_seen, meals,
+  medication, daytime_rest_min, left_safe_places, outside_min, falls, fall_escalated, distressed, quiz_total,
+  quiz_correct}]}`. `GET /report/note?days=…[&fresh=1]` → `{note, provider, generated_at, cached}` (summary job,
+  60 s, 503 on timeout; cached in memory until the totals change). Agent action `report {days}`.
+- **Walk replay** (#11): no new route — the website reads `GET /api/log-entries?type=geofence&from=…` (7 days) and
+  `lib/story.js walkPoints(entries, 'last_outing'|'today'|'yesterday')`. Agent action `replay {window}`.
+- **Family photo album** (#21): `GET /api/patients/:id/memories` → `[{id, image_url, caption, added_by, created_at}]` ·
+  `POST {image: data URI|base64, caption ≤200}` (Cloudinary `assist/memories`, limited to 1600 px) ·
+  `PATCH /memories/:mid {caption}` · `DELETE /memories/:mid` · `POST /api/patients/:id/album {ids?}` → creates
+  command `album {title, slides: [{image_url, caption, audio_url?}]}` (≤12). Voice: intro line + one recording per
+  caption, made in parallel, held up to 45 s. Agent action `album`.
+- **Demo history**: `POST /api/demo/:id/history {days: 14}` → `{days, frames, pings, quiz_days, falls}` ·
+  `DELETE /api/demo/:id/history` → `{removed}`. Device `demo:history`, payloads `simulated: true`; not removed by
+  the daily reset. `GET /api/demo/:id` adds `history_entries`.

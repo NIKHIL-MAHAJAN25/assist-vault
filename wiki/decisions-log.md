@@ -756,3 +756,24 @@ system working as designed, once, on a rule that had only existed for a few hour
   with its own voice. Fixed phrases (fall check, guide home) are generated at startup. Playback errors on the
   phone also fall back to the phone's voice. `TTS=off` disables it entirely.
 - Recorded voice notes are untouched (the family member's real voice). Voice cloning still deferred.
+
+
+## Session 18 — 2026-10-19 — Batch D: looking back
+
+- **Object recall searches what the camera already noted** (`objects_of_note` + activity), no new AI call per
+  question. Whole-word match with the object word only ("reading glasses" → glasses, never "reading");
+  always-plural words stay plural ("glasses" is not "glass"); a tiny synonym list. The Assistant gets the
+  latest sighting of every object from the last 3 days in its context and proposes a `find` card with the photo.
+  *Why:* grounded and instant; the honest limit (one room, only what the camera made out) is said on the card.
+- **Doctor's report = counted numbers + a helper-written note.** The numbers are computed in code
+  (`services/insightsService.js`); the AI only phrases a 4–6 sentence note from them, told not to diagnose and
+  to say "not seen" rather than "did not" (one room). Today is marked "so far" and left out of averages.
+  *Why:* a doctor can trust counts; the prose is a convenience on top. Print-friendly page (`print:` styles).
+- **Walk replay needs no backend:** geofence pings already hold lat/lng/inside; `walkPoints` picks the latest
+  continuous outing (30-min gap ends it). Equal screen time per step (~14 s per walk) so slow and fast walks both
+  play well.
+- **Reminiscence uses the family's own words, read aloud** (no AI rewriting of captions — they're personal).
+  Photos resized to 1600 px on upload. One natural-voice recording per caption, cached forever, so replays are
+  instant. The phone shows the slideshow full screen with Back / Pause / Next; nothing auto-advances while paused.
+- **Demo history is first-class and separate:** `demo:history` device, `simulated: true`, removed only on
+  request, and the report says "Includes simulated demo history" so nothing is passed off as real.

@@ -568,3 +568,14 @@ needs the server update (`1b686e0`) and the new app (`461ada3`) installed, then 
 | 16 | `5a885a4` | Demo kit, notification feed, family broadcasts |
 | 17 | `62409f5` | Scheduler, rules, fall check, bedtime story, family events |
 | 17b | `1b686e0` | Natural voice (Gemini TTS, cached, phone fallback) |
+| 18 | `bf97d15` | Batch D: object recall, doctor's report + note, photo album (narrated), demo history |
+
+## 24. Batch D on the rail (Session 18)
+
+- **Report note** is a `summary`-kind job with `reportPrompt` (numbers only, no diagnosis, "not seen" rather than
+  "did not"); `GET /report/note` waits 60 s, cached in memory by the totals' fingerprint.
+- **Object recall** adds no job: `insightsService.findObject` searches stored `objects_of_note`; the Assistant's
+  context gains "Objects the camera noticed" (`recentObjects`, last 3 days, ≤40) and the `find` action.
+- **Album voice:** `prepareCommand` for `album` makes the intro line and one recording per caption in parallel
+  (each cached), writes `slides[i].audio_url`; held up to 45 s like the story.
+- New agent actions: `find`, `replay`, `album`, `report`.

@@ -77,3 +77,11 @@ No separate "alerts" table — an alert is `log_entries` filtered by `requires_a
   summary: prompt, cache_key), `result`, `error`, `attempts`, `avoid_provider`, `provider`, `worker_id`,
   `created_at`, `started_at`, `finished_at`. Finished rows are deleted after a day. Not an FK to patients on purpose
   (queue rows are disposable).
+
+
+## `memories` — added Session 18
+- `id`, `patient_id`, `image_url` (Cloudinary), `caption` (≤200, the family's words, read aloud), `created_by`
+  (user id), `creator_name`, `created_at`. Index `(patient_id, created_at)`. Migration `20261018182153_memories`.
+- Demo history uses existing tables: `log_entries` from device `demo:history` (`payload.simulated = true`),
+  `quiz_questions` anchored to one of those entries via `source_log_entry_id`, and a `family_events` fall check
+  with `ref_id` → a history entry, so all of it can be found and removed again.

@@ -562,8 +562,7 @@ vault has AGENTS.md/.codex so Codex would send it to OpenAI if run there; photos
 - Family-side notifications on the app (needs a second phone).
 
 **Still to build (shortlist)**
-- Batch D: #11 replay her walk (animated route), #20 "where did she leave her glasses?", #22 doctor's
-  report, #21 reminiscence (narrated family album).
+- ~~Batch D~~ — built in Session 18 (see below).
 - Batch E (showpiece): the Assistant speaks its answers; evidence photo behind each claim; "how it decided"
   (Claude described → Drex rated → rules agreed).
 
@@ -576,3 +575,19 @@ vault has AGENTS.md/.codex so Codex would send it to OpenAI if run there; photos
 - Reconnect the ESP32 camera; stage and save the 5 remaining demo scenes.
 - Run `node scripts/drex-check.js`; rotate the Drex key; push the four repos to GitHub.
 - At the end: deploy the website onto the server; repo/code walkthrough.
+
+## Session 18 — 2026-10-19: Batch D (looking back)
+
+- **#20 "Where did she leave her glasses?"** — `GET /find`, objects in the Assistant's context, `find` card with
+  the photo, time, what she was doing, earlier sightings. Verified locally with real camera frames + history.
+- **#11 Replay her walk** — Places → "Replay a walk" (Last time outside / Today / Yesterday) and an Assistant
+  card: animated marker, trail, clock, Left/Back marks, scrubber. Verified locally on the demo walk.
+- **#22 Doctor's report** — `/report?days=7|14|28` (account menu, Assistant card, Demo kit): 8 headline numbers,
+  helper-written note with "Worth discussing", 4 charts, day-by-day table, print/PDF. Verified locally (Gemini note).
+- **#21 Reminiscence** — Memory → Family photo album (add photo + line, remove, "Show on Margaret's phone");
+  phone: full-screen narrated slideshow + Home card. Backend + voice verified locally; **phone untested** (needs
+  the server update and the new app).
+- **Demo history** — Demo kit → "Add two weeks of history" (431 moments, 76 location points, 14 quiz days, 1 fall).
+- Commits: backend `bf97d15`, website `ddce360`, app `0ee8d1a`.
+- **Needs the user:** server update (`D:\assist-backend.tgz`, includes migration `memories`), install the app,
+  add a few real family photos with captions.

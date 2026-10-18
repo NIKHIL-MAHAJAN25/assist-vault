@@ -13,6 +13,8 @@
 | Phone = Margaret's phone | App on the patient side, paired (Home shows "With your family") |
 | Phone location ON | System Location on; Today shows "At Home" |
 | Home place correct | Places → Home circle around the venue/your house (walk simulator starts from it) |
+| Two weeks of history | Demo kit → Looking back → Add two weeks of history (for the report, replay, week summary) |
+| Family photos | Memory → Family photo album → add 4–6 photos with a line each |
 | Camera scenes saved | Stage each scene once (eating, TV, resting, leaving, fall, empty) → Demo kit → Save latest photo |
 | Desktop alerts on | Bell → "Get desktop alerts" → Allow |
 | Phone volume up, not on silent | For speech; "Ring phone" is loud by design |
@@ -34,7 +36,11 @@ The ESP32 needs to share a network with the phone; if it can't, use **camera sce
 9. **Tell the family** → note to everyone.
 9b. **"Tell me when she gets home"** → walk back → notification. **Simulate a fall** → "are you okay?" → escalation.
 9c. **Bedtime story** → her phone reads her day back to her.
-10. **Reset demo**.
+9d. **"Where did Margaret leave the glasses?"** → last sighting with the photo.
+9e. **Places → Replay a walk** → the route draws itself, Left/Back marked.
+9f. **Doctor's report** (account menu) → numbers, the helper's note, Print.
+9g. **Memory → Photo album → Show on Margaret's phone** → narrated slideshow on her phone.
+10. **Reset demo** (keeps the two-week history; remove it from the Demo kit if needed).
 
 ## Test cases
 
@@ -71,3 +77,12 @@ The ESP32 needs to share a network with the phone; if it can't, use **camera sce
 | No answer from the Assistant | Gemini fallback kicks in after 15 s; check helper log `journalctl -u assist-helpers -n 20` |
 | Walk doesn't alert | Home place missing/too large — fix on Places; Stop + Walk again |
 | Desktop alert missing | Browser permission blocked; the in-page toast and bell still work |
+
+### Batch D cases (website Demo page has the full list)
+
+| # | Feature | Steps | Judges see | Needs |
+|---|---|---|---|---|
+| 22 | Where did she leave it | Assistant → "Where did Margaret leave the glasses?" | Last seen time + photo + earlier sightings | A camera moment showing them, or history |
+| 23 | Replay her walk | Walk away → Walk home → Places → Replay a walk | Animated route, clock, Left/Back marks | Home place |
+| 24 | Doctor's report | Add history → account menu → Doctor's report → Print | Numbers, note, charts, day table, PDF | History |
+| 25 | Photo album | Memory → add photos → Show on Margaret's phone | Full-screen slideshow, each line read aloud | Phone, photos |
