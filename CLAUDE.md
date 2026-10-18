@@ -20,6 +20,7 @@ for the full problem statement and design lens.
 | [wiki/db-schema.md](wiki/db-schema.md) | Postgres/Prisma schema, normalization rules for extending it |
 | [wiki/api-contract.md](wiki/api-contract.md) | **The critical shared page** — every route, every consumer |
 | [wiki/ai-prompting-patterns.md](wiki/ai-prompting-patterns.md) | All AI techniques (structured output, agentic decision layer, RAG, etc.) |
+| [wiki/ai-helpers.md](wiki/ai-helpers.md) | AI helper job queue, 8-worker pool (Claude/Codex/Gemini), day journal, summaries, EC2 deploy + runbook |
 | [wiki/decisions-log.md](wiki/decisions-log.md) | Judgment calls made during the build, with rationale |
 | [wiki/log.md](wiki/log.md) | Session-by-session handoff notes |
 
