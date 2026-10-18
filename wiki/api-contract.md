@@ -203,3 +203,23 @@ recent: [{ log_entry_id, timestamp, entry_type, what, rules: {notify}, drex: {no
 Side effect on ingestion (no shape change): every `POST /api/frames`, and every `POST /api/geofence-check`
 that the rules flag, gets `agent_decision` set and `payload.decision = { mode, rules, drex, agree, decided_by, at }`.
 In `live` mode the frame response's `requires_attention` reflects Drex's answer.
+
+
+## Helper queue, journal & summaries — added Session 14 (2026-10-18)
+
+**Changed:** `POST /api/frames` now answers **202** `{ log_entry_id: <job id>, requires_attention: false, queued: true }`
+straight away; the log entry is written when a helper (or the Gemini fallback) answers. Same field names as
+before so the companion app (which ignores the body) is unaffected. Frame payloads gain `activity_key`
+(fixed vocabulary in `services/prompts.js`) and `analysed_by` (`claude` | `codex` | `gemini`).
+
+**Family (JWT, family_caregiver, own patient)**
+- `GET /api/patients/:id/summary?range=today|morning|week[&fresh=1]` → `{ range, summary, provider, generated_at,
+  journal_lines, cached }`. Waits up to 60 s; 503 if nothing could write it. Cached until the journal changes.
+- `GET /api/patients/:id/journal?date=YYYY-MM-DD` → `text/markdown`, the day journal.
+
+**Internal (helpers on the same host only — `x-worker-token` must equal `WORKER_TOKEN`, and any request
+carrying `X-Forwarded-For` (i.e. via Caddy) gets 404)**
+- `POST /internal/jobs/claim` `{ provider: claude|codex, worker_id }` → `{ id, kind, prompt, image? }` or 204
+  after a 20 s long-poll.
+- `POST /internal/jobs/:id/result` `{ worker_id, ok, output | error, ms }` → `{ accepted }` (409 if not theirs).
+- `GET /internal/stats` → jobs in the last hour by status and provider.

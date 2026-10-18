@@ -689,3 +689,25 @@ system working as designed, once, on a rule that had only existed for a few hour
 - **"Lost?" widget is a plain RemoteViews AppWidget**, not Glance. *Why:* one static tap target needs no
   new dependency; whole card opens MainActivity with `open=get-home` (clear task), NavHost jumps to Get home
   when the phone is set up as the patient's.
+
+
+## Session 14 — 2026-10-18 — Backend on EC2, helper queue, day journal
+
+- **Backend + Postgres moved to the user's EC2 box as Docker containers** next to their existing Forgejo/OneDev
+  stack, behind the existing Caddy (new site `assist.3-107-133-23.sslip.io`, nothing else touched). *Why:* the
+  helpers must receive jobs; exposing the laptop was ruled out; one public HTTPS address also removes the
+  same-WiFi dependency for the demo.
+- **Helpers run on the host as a separate `assist` user (systemd), not in Docker.** *Why:* Claude Code / Codex
+  sign-ins are interactive and live in a user's home; a separate user keeps them away from the other projects.
+- **Queue in Postgres, claimed with `FOR UPDATE SKIP LOCKED`** rather than Redis. *Why:* already there, atomic,
+  enough for 8 workers. Newest frame first, stale (>90 s) frames dropped, summaries jump the queue.
+- **Bad answer → retried once on the other provider → Gemini.** Unclaimed after 20 s (frames) / 25 s (summaries)
+  → Gemini. Gemini frames throttled to one per 10 s (free-tier safety).
+- **The backend is the only writer of the journal**, re-rendered from the database (one Markdown file per patient
+  per day, repeats merged, 7-day retention). *Why:* 8 concurrent writers to one file interleave and lose order;
+  the DB stays the truth and the file can always be rebuilt. Helpers get its last 10 lines as context
+  (short-term memory item, done) and summaries are written from it.
+- **Internal routes double-locked** (token + reject anything that came through Caddy) so a leaked token alone
+  can't drive the queue from the internet.
+- **Found in testing:** an abandoned long-poll could claim a job for nobody; the claim loop now stops when the
+  helper disconnects and releases a job claimed in that instant.

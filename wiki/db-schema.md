@@ -69,3 +69,11 @@ No separate "alerts" table — an alert is `log_entries` filtered by `requires_a
   the new user id or device id; not an FK because it can point at either table).
 - `log_entries.payload.decision` (JSON inside payload, no column) holds the decision layer's record;
   `log_entries.agent_decision` is now actually written (`log_only` | `alert_family` | `check_in`).
+
+
+## `ai_jobs` — added Session 14
+- `id`, `kind` (`frame` | `summary`), `status` (`queued` | `running` | `done` | `failed` | `dropped`), `patient_id`,
+  `payload` (frame: device_id, captured_at, prompt, image base64 — the image is removed once finished;
+  summary: prompt, cache_key), `result`, `error`, `attempts`, `avoid_provider`, `provider`, `worker_id`,
+  `created_at`, `started_at`, `finished_at`. Finished rows are deleted after a day. Not an FK to patients on purpose
+  (queue rows are disposable).
