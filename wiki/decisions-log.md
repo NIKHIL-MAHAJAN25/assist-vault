@@ -711,3 +711,18 @@ system working as designed, once, on a rule that had only existed for a few hour
   can't drive the queue from the internet.
 - **Found in testing:** an abandoned long-poll could claim a job for nobody; the claim loop now stops when the
   helper disconnects and releases a job claimed in that instant.
+
+## Session 15 — 2026-10-18 — Family Assistant tab
+
+- **Assistant = grounded agent that proposes, family confirms.** The model gets a context snapshot (status,
+  location, latest activity, alerts, safe places, quiz, recent messages, today's journal) and returns
+  `{reply, actions}`. Actions are a closed registry (`services/assistantService.js ACTIONS`); anything that
+  reaches the patient is rendered as a card with Send / Edit / Not now. *Why:* an agent that can talk to a
+  person with memory loss must never act on a misunderstanding; one tap of confirmation is cheap.
+- **Runs on the helper queue as kind `agent`**, ahead of frames, 15 s Gemini fallback. Gemini retry now also
+  covers 503 "overloaded" (seen in testing).
+- **Patient phone receives commands by polling** (6 s, MonitoringService) rather than push — no FCM project
+  exists yet; delivery/spoken status comes back via ack so the family sees Sent → On her phone → Spoken.
+- **"Say to <name>" mode bypasses the AI** (straight to the confirm card) for when the family knows exactly
+  what to say. Dictation uses the browser's Web Speech API (Chrome/Edge); hidden where unsupported.
+- Conversation history lives only in the viewer's browser (localStorage), last 8 turns sent as context.

@@ -223,3 +223,20 @@ carrying `X-Forwarded-For` (i.e. via Caddy) gets 404)**
   after a 20 s long-poll.
 - `POST /internal/jobs/:id/result` `{ worker_id, ok, output | error, ms }` → `{ accepted }` (409 if not theirs).
 - `GET /internal/stats` → jobs in the last hour by status and provider.
+
+## Family Assistant & device commands — added Session 15 (2026-10-18)
+
+**Family (JWT, family_caregiver, own patient)**
+- `POST /api/patients/:id/assistant` `{ message, history?: [{role:'user'|'assistant', text}] }` →
+  `{ reply, actions: [...], provider, sources: [...], ms }`. Runs as an `agent` job on the helper queue (Gemini
+  fallback after 15 s); 503 if nothing answers in 60 s. `actions` are **proposals only**, from a closed set:
+  `{type:'speak', text}` · `{type:'map'}` · `{type:'photo'}` · `{type:'summary', range}`. Unknown types are dropped.
+- `POST /api/patients/:id/commands` `{ type:'speak', text (≤280) }` → 201 command (the family confirmed it).
+- `GET /api/patients/:id/commands` → last 20 `{ id, type, text, status, from, created_at, delivered_at, done_at, error }`.
+  `status`: `pending` → `delivered` (phone picked it up) → `done` (spoken) | `failed` | `expired` (not picked up in 10 min).
+
+**Device (api key)**
+- `GET /api/devices/commands?device_id=` → pending `[{ id, type, text, from, created_at }]`, marked `delivered`.
+- `POST /api/devices/commands/:id/ack` `{ device_id, ok, error? }`.
+Companion app polls every 6 s from MonitoringService, speaks "Message from X. …", posts a notification and
+shows the message on the patient Home for 3 h with "Say it again".
