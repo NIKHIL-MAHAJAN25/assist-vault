@@ -240,3 +240,23 @@ carrying `X-Forwarded-For` (i.e. via Caddy) gets 404)**
 - `POST /api/devices/commands/:id/ack` `{ device_id, ok, error? }`.
 Companion app polls every 6 s from MonitoringService, speaks "Message from X. …", posts a notification and
 shows the message on the patient Home for 3 h with "Say it again".
+
+## Phone actions, notifications, broadcasts, demo kit — Session 16 (2026-10-18)
+
+**Commands** (`POST /api/patients/:id/commands`) now take any type from `services/commandTypes.js`:
+`speak {text}`, `ask {question, quick?}`, `voice {url, seconds, text?}`, `ring`, `reminder {text, at "HH:MM"|ISO}`,
+`capture`, `guide_home`, `quiz`, `calm {voice_url?}`. `GET /commands` items carry the payload fields plus results
+(`reply`, `replied_at` for ask; `uploaded`, `log_entry_id`, `image_public_id`, `activity`, `person_state` for capture).
+Device: `GET /api/devices/commands` returns `{id, type, from, created_at, ...payload}`; ack body adds `reply` (ask).
+`POST /api/frames` accepts optional `command_id` (photo taken on request; jumps the queue, never dropped as stale).
+- `POST /api/patients/:id/voice-notes {audio: base64, mime}` → `{url (mp3), seconds}` (Cloudinary, resource_type video).
+
+**Notifications** — `GET /api/patients/:id/notifications?since=ISO` (default 24 h) →
+`{items: [{id, kind: alert|reply|failed|note, severity, title, body, at, mine?, acknowledged?}], now}`.
+**Broadcasts** — `POST /api/patients/:id/broadcasts {text}` → `{id, text, from, created_at, family_members}`.
+Agent actions gain `ask`, `reminder`, `capture`, `ring`, `guide_home`, `calm`, `quiz`, `broadcast`.
+
+**Demo kit** (JWT family, own patient, `DEMO_MODE=1`, else 403):
+`GET /api/demo/:id` · `POST /api/demo/:id/scenes/:name/save {log_entry_id?}` · `POST /api/demo/:id/scenes/:name/play` ·
+`POST /api/demo/:id/walk {direction: away|home|stop}` · `POST /api/demo/:id/answer {reply}` · `POST /api/demo/:id/reset`.
+Simulated readings come from per-patient devices `demo:camera` / `demo:phone`; real phone pings are ignored while a walk runs.

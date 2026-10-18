@@ -726,3 +726,21 @@ system working as designed, once, on a rule that had only existed for a few hour
 - **"Say to <name>" mode bypasses the AI** (straight to the confirm card) for when the family knows exactly
   what to say. Dictation uses the browser's Web Speech API (Chrome/Edge); hidden where unsupported.
 - Conversation history lives only in the viewer's browser (localStorage), last 8 turns sent as context.
+
+## Session 16 — 2026-10-18 — Phone actions, notifications, demo kit
+
+- **Ask her = card + mic on her Home, not background listening.** Android blocks the microphone for a
+  background service; a card she answers when ready (taps or voice) is reliable and kinder.
+- **Voice notes are recorded in the browser** (MediaRecorder) with live browser STT for the on-screen words;
+  stored on Cloudinary and handed to the phone as mp3. Chrome's `audio/webm;codecs=opus` breaks a data URI
+  upload — the `;codecs` parameter is stripped server-side. Voice cloning deferred (paid service + consent).
+- **TTS picks the best installed voice** (local, highest quality, own country — on the test phone Google's
+  en-IN neural voice) at 0.9× speed.
+- **Notifications without FCM:** one feed endpoint; the website polls (8 s) and raises toasts + desktop
+  notifications; the family app runs a small foreground service polling every 15 s. Revisit with FCM/web push
+  for production battery life.
+- **Demo kit is first-class** (user requirement: everything demonstrable on stage). Simulations go through the
+  production code paths (recordPing, enqueueFrame), use `demo:` devices so reset can remove them, and are off
+  unless `DEMO_MODE=1`. The simulated walk picks the bearing that leaves every safe place soonest (adjacent
+  places otherwise swallowed it in testing). Black "sun" on Samsung: a fully transparent radial gradient
+  renders black — never draw celestial bodies with transparent colours.
