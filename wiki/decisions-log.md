@@ -744,3 +744,15 @@ system working as designed, once, on a rule that had only existed for a few hour
   unless `DEMO_MODE=1`. The simulated walk picks the bearing that leaves every safe place soonest (adjacent
   places otherwise swallowed it in testing). Black "sun" on Samsung: a fully transparent radial gradient
   renders black — never draw celestial bodies with transparent colours.
+
+## Session 17b — 2026-10-18 — Natural voice (Gemini TTS) with cache + fallback
+
+- **Everything spoken on the patient's phone uses Gemini TTS** (`services/voiceService.js`, voice "Sulafat", gentle
+  style prompt), model `gemini-3.1-flash-tts-preview` first (has a free tier), `gemini-2.5-flash-preview-tts` second.
+  *Why:* the best on-device Android voice still sounded robotic to the user, especially for the bedtime story.
+- **Cache forever** by hash(voice+style+text); audio kept on the server's journal volume and served from
+  `/tts/<hash>.wav` — no Cloudinary upload, which was the slow part (~15 s → ~6 s for a new line, ~1 s cached).
+- **Commands wait for their voice** (`voice_pending`, max 10 s; 45 s for the story); after that the phone speaks
+  with its own voice. Fixed phrases (fall check, guide home) are generated at startup. Playback errors on the
+  phone also fall back to the phone's voice. `TTS=off` disables it entirely.
+- Recorded voice notes are untouched (the family member's real voice). Voice cloning still deferred.
