@@ -260,3 +260,19 @@ Agent actions gain `ask`, `reminder`, `capture`, `ring`, `guide_home`, `calm`, `
 `GET /api/demo/:id` · `POST /api/demo/:id/scenes/:name/save {log_entry_id?}` · `POST /api/demo/:id/scenes/:name/play` ·
 `POST /api/demo/:id/walk {direction: away|home|stop}` · `POST /api/demo/:id/answer {reply}` · `POST /api/demo/:id/reset`.
 Simulated readings come from per-patient devices `demo:camera` / `demo:phone`; real phone pings are ignored while a walk runs.
+
+## Agent on its own (Batch C) — Session 17 (2026-10-18)
+
+- **Rules** (`services/ruleEngine.js`): `GET /api/patients/:id/rules` · `POST {kind, params, repeat: once|daily}` ·
+  `DELETE /rules/:rid`. Kinds: `arrives_home {}`, `leaves_home {after?}`, `not_seen_by {activity, by}`,
+  `still_at {activity, at}`, `seen {activity}`, `quiet_for {minutes}` (activity = vocabulary key or `up`).
+  Checked every 30 s by `services/scheduler.js`; hits become `family_events` (kind `rule`).
+- **Fall check** (`services/fallCheck.js`): a `fallen` frame or watch emergency → `ask` command with
+  `fall_check: true`, quick `I'm okay / I need help`. Okay → event `fall_ok`; help or 2 min silence → event
+  `fall_escalated` (act) + `ring` command.
+- **Bedtime story** (`services/storyService.js`): `POST /api/patients/:id/story` → `{text, provider, command_id}`;
+  `GET/PUT /api/patients/:id/story-settings {at: "HH:MM"|null}` (default 21:00). New command type `story {text, title}`.
+- **Notifications** now include `family_events` (kinds `rule`, `story`; fall events as `alert`/`reply`).
+- Agent actions gain `rule {kind, params, repeat}` and `story`.
+- Demo kit: `POST /api/demo/:id/tick` (run the scheduler now), `POST /api/demo/:id/fall` (simulated fall).
+- Schema: `watch_rules`, `family_events`, `patients.bedtime_story_at`.

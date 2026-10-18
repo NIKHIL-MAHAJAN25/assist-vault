@@ -32,6 +32,8 @@ The ESP32 needs to share a network with the phone; if it can't, use **camera sce
 7. **Calm down** → breathing card + your voice note.
 8. **Play scene "A fall"** → helper describes it → alert.
 9. **Tell the family** → note to everyone.
+9b. **"Tell me when she gets home"** → walk back → notification. **Simulate a fall** → "are you okay?" → escalation.
+9c. **Bedtime story** → her phone reads her day back to her.
 10. **Reset demo**.
 
 ## Test cases
@@ -53,7 +55,12 @@ The ESP32 needs to share a network with the phone; if it can't, use **camera sce
 | 13 | Staged scene | Demo kit → Play "Eating" / "A fall" | New moment on Today/Log; "A fall" alerts | Saved scene |
 | 14 | Tell the family | Tell family → text → Send to everyone | Other members get a notification | 2nd account optional |
 | 15 | Summary | Today → In a few words → Write summary | Warm 3–4 sentences by a helper | Website |
-| 16 | Reset | Demo kit → Reset demo | Demo actions/notes/simulated readings cleared | — |
+| 16 | "Tell me when she gets home" | Walk away → rule → Walk back home → Run checks now | "Margaret is back inside the safe places"; rule ticks off | Home place |
+| 17 | "Hasn't eaten by…" | Watch for… → not seen eating by (1 min ago) → Run checks now | "It's past … and Margaret hasn't been seen eating today" | — |
+| 18 | Fall check — okay | Demo kit → Simulate a fall → tap "I'm okay" | "Possible fall — checking" then "Margaret says she's okay" | Phone or kit |
+| 19 | Fall check — no answer | Simulate a fall → wait 2 min → Run checks now | "⚠ Possible fall — Margaret needs you" + phone rings | Phone |
+| 20 | Bedtime story | Bedtime story → Write and send | "Today you…" story read aloud; "Your day" card | Phone |
+| 21 | Reset | Demo kit → Reset demo | Demo actions/notes/rules/events/simulated readings cleared | — |
 
 ## If something goes wrong on stage
 
