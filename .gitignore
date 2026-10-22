@@ -1,0 +1,12 @@
+# Local tool settings
+.claude/
+.codex/
+
+# Obsidian per-machine state
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.trash/
+
+# OS
+.DS_Store
+Thumbs.db
