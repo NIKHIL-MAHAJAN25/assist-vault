@@ -85,3 +85,10 @@ No separate "alerts" table — an alert is `log_entries` filtered by `requires_a
 - Demo history uses existing tables: `log_entries` from device `demo:history` (`payload.simulated = true`),
   `quiz_questions` anchored to one of those entries via `source_log_entry_id`, and a `family_events` fall check
   with `ref_id` → a history entry, so all of it can be found and removed again.
+
+
+## Session 19 (2026-10-23)
+- `patients.announce_faces` boolean, default false (migration `face_announce`).
+- `log_entry_faces` is now written (camera recognitions). `log_entries.payload` may hold `people`,
+  `unknown_faces`, `faces_ms`. Payload keys added after creation are merged in SQL
+  (`payload || patch`, `utils/mergePayload.js`), never written back whole.

@@ -777,3 +777,28 @@ system working as designed, once, on a rule that had only existed for a few hour
   instant. The phone shows the slideshow full screen with Back / Pause / Next; nothing auto-advances while paused.
 - **Demo history is first-class and separate:** `demo:history` device, `simulated: true`, removed only on
   request, and the report says "Includes simulated demo history" so nothing is passed off as real.
+
+
+## Session 19 — 2026-10-23 — Batch E, face recognition, new laptop
+
+- **Evidence by citation, not by retrieval UI.** The Assistant gets today's log as numbered evidence (camera
+  stretches with their most confident photo, place changes, tag sightings) and must cite `[E#]`. *Why:* one
+  prompt change makes every claim checkable, and the same items carry how alerts were decided.
+- **"How it decided" is built from what's already stored** (analysed_by, confidence, rules, Drex, decided_by).
+  No new storage; also shown on flagged Log moments.
+- **Face recognition runs on the server**, with the same face-api models the website enrols with
+  (`@vladmandic/face-api` + TensorFlow WebAssembly backend). *Why:* fingerprints must be comparable with
+  the ones made in the browser; WASM needs no native build in Docker. Threshold 0.55 (stricter than
+  face-api's 0.6): a missed name costs little, a wrong one confuses her. Detector retries at smaller sizes so a
+  face filling the frame isn't missed. Verified on face-api's sample photos (3/3 enrolled people named
+  correctly in group shots, others left unknown).
+- **Announcing a visitor on her phone is opt-in** (off by default); the family is always told, at most once
+  per person per 2 h. *Why:* a wrong name said aloud to someone with memory loss is worse than silence.
+- **Payload writes are merged in SQL.** Face recognition and the decision layer finish the same entry at the
+  same time; a read-modify-write of the whole JSON lost the faces in testing.
+- **Drex confirmed against the live service.** drex-v2.0 returns `{"notify":{"type":"noul","noul":p}}`; the
+  parser now reads `noul`.
+- **User decisions:** NFC stickers → later; SMS straight from the app with the phone's SMS permission (no
+  Twilio, no email); no paid API keys (personal demo); medication matching uses a hard-coded demo frame.
+- **Repos published** on GitHub (public), history rewritten before publishing to drop AI co-author trailers
+  and local tool folders, with complete `.gitignore` files.

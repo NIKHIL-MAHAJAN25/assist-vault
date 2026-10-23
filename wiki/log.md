@@ -591,3 +591,24 @@ vault has AGENTS.md/.codex so Codex would send it to OpenAI if run there; photos
 - Commits: backend `bf97d15`, website `ddce360`, app `0ee8d1a`.
 - **Needs the user:** server update (`D:\assist-backend.tgz`, includes migration `memories`), install the app,
   add a few real family photos with captions.
+
+
+## Session 19 — 2026-10-23: new laptop, GitHub, Batch E, face recognition
+
+- **New laptop:** everything in `C:\AssistProject` (repos, `esp32-firmware` = the exact ESP32-CAM program,
+  `keys`, old notes). Local Postgres 17 (`assist_app` / `assistdb`), `ssh demo` works.
+- **GitHub:** `NIKHIL-MAHAJAN25/assist-vault`, `assist-backend`, `assist-family-dashboard`,
+  `assist-companion-app` — public.
+- **Website deployed** on the server at https://app.3-107-133-23.sslip.io (nginx container `assist-web`).
+- **Batch E (built, verified locally):** evidence chips in Assistant answers (photo or map), read-aloud
+  (speaker per answer + "Read aloud" switch), "How it decided" on alerts and flagged Log moments.
+- **Face recognition (built, verified locally end to end):** camera photo → AI description → faces matched →
+  moment "With Sheldon" → family note → optional spoken announcement → journal line. People page shows last
+  seen + the announce switch.
+- **Drex:** parser fixed to the live format; working in shadow mode.
+
+**Needs the user:** update the server (new backend package, includes migration `face_announce` and the new
+face dependencies), redeploy the website package; enrol real family photos on People.
+
+**Still to build:** timeline at scale; SMS alerts from the app; "Next: lunch at 1 pm"; 7-day photo clean-up;
+routine learning; medication matching (needs the medicine photo). App work waits for Android Studio.

@@ -301,3 +301,27 @@ All JWT family, own patient.
 - **Demo history**: `POST /api/demo/:id/history {days: 14}` → `{days, frames, pings, quiz_days, falls}` ·
   `DELETE /api/demo/:id/history` → `{removed}`. Device `demo:history`, payloads `simulated: true`; not removed by
   the daily reset. `GET /api/demo/:id` adds `history_entries`.
+
+
+## Batch E and face recognition — added Session 19 (2026-10-23)
+
+**Assistant** (POST /api/patients/:id/assistant) — response gains `evidence`: the items the reply cited,
+in order of first use (max 6): `{ id: "E4", kind: "camera"|"place"|"sighting", from, to, label, count,
+image_public_id, lat, lng, entry_id, entry_ids, flagged, decision }`. The reply text keeps one marker per
+cited id (`"… at 1:10 [E4]."`); unknown ids are stripped. `decision` (alerts only) =
+`{ described_by, confidence, rules: {alert}, drex: {alert, probability, urgency} | {error} | null, mode,
+decided_by, final: "alert"|"logged" }`.
+
+`POST /api/patients/:id/speech` (JWT, own patient) `{ text }` → `{ url }` — the reply in the natural
+voice (cached `/tts/<hash>.wav`). 503 if TTS is off or too slow.
+
+**Faces** (JWT, family_caregiver, own patient; enrolled-face routes now also check the patient):
+- `GET /api/patients/:id/people-seen` → `[{ face_id, name, times_seen_7d, last_seen_at, last_seen_entry_id,
+  last_seen_image, last_seen_doing }]`
+- `GET|PUT /api/patients/:id/face-settings` `{ announce: boolean }` → `{ announce, recognition }`
+- `DELETE /api/enrolled-faces/:id` now removes the person's recognitions first.
+
+Side effects on camera moments with someone in view: `payload.people = [{ name, full_name, face_id,
+distance }]`, `payload.unknown_faces`, rows in `log_entry_faces`; a `family_events` row
+`kind: "visitor"` (info) per person at most every 2 h; if `announce_faces`, a `speak` device command
+("Margaret, Sarah, your daughter, is here to see you.", expires in 5 min).
