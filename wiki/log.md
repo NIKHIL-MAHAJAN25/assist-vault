@@ -637,3 +637,11 @@ finish Android Studio.
 
 **Later:** Wear OS watch app; Drex live mode; NFC stickers.
 **Dropped:** Twilio/Resend; paid API keys (personal demo).
+## Session 20 — 2026-10-23: Watch tab, watch out of the log, smoother watch app
+
+- **Website Watch tab** (`/watch`, nav after Places): live heart that pulses at the real bpm, last 10 minutes, heart chart (today / 24 h / 7 days) with unsettled and emergency bands and evenings shaded, four stats, Send to the watch (message, ask, breathe, guide home) with live status, "From the wrist" events, device card, demo-watch strip. Today's Devices tile shows "Watch · 75 bpm" and links to it.
+- **Watch readings left the log.** `GET /api/log-entries` leaves out `heartrate` unless `type=heartrate` is asked for; the Watch tab reads `GET /patients/:id/vitals`.
+- **Watch has its own command queue** (`device_commands.target`); fall checks ask on both phone and watch, first answer wins, the other is closed (watch also gets `dismiss`). Hold for help (`motion_pattern: "sos"`) skips "are you okay?" and rings the phone.
+- **Demo:** simulated watch (`POST /demo/:id/watch`), a week of watch history, and on the Log page **Fill with demo days** / **Clear the log** (for a clean ESP32 demo).
+- **Watch app:** release build (R8, signed with the debug key), no endless heart animation, no vignette — scrolling went smooth (about 5 % janky frames). Build with `assembleRelease`, JDK 21.
+- Phone app: no change needed (it polls the phone queue only). Optional later: close a fall-check question on the phone when the watch answered first.

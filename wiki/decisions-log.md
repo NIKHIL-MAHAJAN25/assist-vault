@@ -802,3 +802,11 @@ system working as designed, once, on a rule that had only existed for a few hour
   Twilio, no email); no paid API keys (personal demo); medication matching uses a hard-coded demo frame.
 - **Repos published** on GitHub (public), history rewritten before publishing to drop AI co-author trailers
   and local tool folders, with complete `.gitignore` files.
+## Session 20 — 2026-10-23 — Watch tab and the watch's own queue
+
+- **Watch data is not log data.** The log is for what happened (camera, places); heart rate has its own tab. *Why:* readings every few seconds drowned the log.
+- **The watch is a second device with its own command queue** (`target`). *Why:* commands are delivered once; a shared poll would steal the phone's actions.
+- **Fall check on both devices, first answer wins.** The watch's copy never escalates by itself; the phone's row stands for the pair.
+- **Hold for help skips "are you okay?"** and rings the phone at once.
+- **Demo watch on the server** (a reading every 5 s through the real paths) so the Watch tab can be shown without the real watch.
+- **Watch app ships as a release build.** *Why:* Compose debug builds were visibly laggy on the watch.

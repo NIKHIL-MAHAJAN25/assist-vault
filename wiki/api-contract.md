@@ -325,3 +325,12 @@ Side effects on camera moments with someone in view: `payload.people = [{ name, 
 distance }]`, `payload.unknown_faces`, rows in `log_entry_faces`; a `family_events` row
 `kind: "visitor"` (info) per person at most every 2 h; if `announce_faces`, a `speak` device command
 ("Margaret, Sarah, your daughter, is here to see you.", expires in 5 min).
+## Watch — added Session 20 (2026-10-23)
+
+- `GET /api/patients/:id/vitals?range=today|24h|7d` (JWT) → `{ range, device{paired,name,paired_at,last_seen,battery,simulated}, latest{at,bpm,scenario,motion}, summary{resting_avg,max{bpm,at},minutes_unsettled,emergencies,last_emergency,readings}, series[≤300 {t,bpm,scenario,motion}], recent[last 10 min], bands[{scenario,from,to}], events[{at,kind,title,body?,severity,status?,reply?}] }`
+- `POST /api/patients/:id/commands` accepts `target: "phone"|"watch"` (default phone). Watch types: ask, speak, reminder, guide_home, calm (others → 400).
+- `GET /api/watch/commands?device_id=` (watch device key only) — same shape as `/devices/commands`, `target = watch` rows. `/devices/commands` now returns `target = phone` rows only.
+- `POST /api/devices/commands/:cid/ack` takes optional `via`; an ack on a superseded question is ignored.
+- `POST /api/heartrate-events` accepts scenario `sos` or `motion_pattern: "sos"` (Hold for help) and optional `battery`.
+- `GET /api/log-entries` excludes heartrate unless `type=heartrate`.
+- Demo (DEMO_MODE=1): `POST /demo/:id/watch {scenario: normal|confusion|emergency|sos|stop}`, `POST|DELETE /demo/:id/watch/history`, `POST /demo/:id/fill`, `POST /demo/:id/clear-log`, `POST /demo/:id/answer {reply, via}`.
