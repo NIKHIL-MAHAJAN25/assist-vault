@@ -612,3 +612,28 @@ face dependencies), redeploy the website package; enrol real family photos on Pe
 
 **Still to build:** timeline at scale; SMS alerts from the app; "Next: lunch at 1 pm"; 7-day photo clean-up;
 routine learning; medication matching (needs the medicine photo). App work waits for Android Studio.
+## Feature status — 2026-10-23 (replaces the 2026-10-18 table above)
+
+**Done and verified live:** camera → helper queue → moments → journal → summaries; geofencing, "Lost?" widget,
+Get home, guide home, fall check, "tell me when" rules; accounts/invites/pairing; Assistant tab with actions;
+notifications and broadcasts; phone actions (speak, ask + reply, voice notes, ring, reminder, photo now, quiz,
+calm, bedtime story); demo kit (25 test cases); website hosted at https://app.3-107-133-23.sslip.io; repos public
+on GitHub.
+
+**Done, verified locally, waiting for the server update:** Batch E (evidence chips, read-aloud, "How it
+decided"); face recognition on camera photos (+ People last seen and announce switch); Drex parser for the live
+format.
+
+**Built, not yet verified on the phone:** natural voice; photo album slideshow; family-app notifications.
+
+**To build next:** timeline at scale (adaptive capture, key photos, scrubbable day bar, quiet lines, scene labels,
+camera-moved moment); 7-day photo clean-up; "Next: lunch at 1 pm" schedule; routine learning v1; SMS alerts from
+the app (phone SMS permission); medication matching with a hard-coded demo frame (waiting for the user's medicine
+photo).
+
+**Needs the user:** run the server update (backend + website packages); reconnect the ESP32 and save 5 demo
+scenes; enrol real family photos; phone on Margaret's side to test voice + album; second phone; Gemini TTS quota;
+finish Android Studio.
+
+**Later:** Wear OS watch app; Drex live mode; NFC stickers.
+**Dropped:** Twilio/Resend; paid API keys (personal demo).
